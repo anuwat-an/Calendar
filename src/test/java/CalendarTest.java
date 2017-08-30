@@ -11,10 +11,10 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
-public class ControllerTest {
+public class CalendarTest {
 
-    Calendar calendar;
-    ArrayList<Appointment> testAppointments;
+    private Calendar calendar;
+    private ArrayList<Appointment> testAppointments;
 
     @Before
     public void setUp() {
