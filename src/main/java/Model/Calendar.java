@@ -4,6 +4,7 @@
 
 package Model;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 
 public class Calendar {
@@ -12,7 +13,7 @@ public class Calendar {
 
     public void addAppointment(String sDate, String sMonth, String sYear,
                                String sHour, String sMinute,
-                               String description, String name) {
+                               String description, String name) throws ParseException {
         appointments.add(new Appointment(sDate, sMonth, sYear,
                                          sHour, sMinute,
                                          description, name));
@@ -23,9 +24,9 @@ public class Calendar {
         ArrayList<Appointment> appointments = new ArrayList<Appointment>();
         for (Appointment appt : this.appointments) {
 
-            if (date.equalsIgnoreCase(appt.getStartTime().get("Date")) &&
-                month.equalsIgnoreCase(appt.getStartTime().get("Month")) &&
-                year.equalsIgnoreCase(appt.getStartTime().get("Year"))) {
+            if (date.equals(appt.getStartTime().get("Date")) &&
+                month.equals(appt.getStartTime().get("Month")) &&
+                year.equals(appt.getStartTime().get("Year"))) {
                 appointments.add(appt);
             }
 
