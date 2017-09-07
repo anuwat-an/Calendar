@@ -4,33 +4,29 @@
 
 package Model;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 
 public class Calendar {
 
-    private ArrayList<Appointment> appointments = new ArrayList<Appointment>();
+    private ArrayList<Appointment> appointments = new ArrayList<>();
 
-    public void addAppointment(String sDate, String sMonth, String sYear,
-                               String sHour, String sMinute,
-                               String description, String name) throws ParseException {
-        appointments.add(new Appointment(sDate, sMonth, sYear,
-                                         sHour, sMinute,
-                                         description, name));
-
+    public void addAppointment(Appointment appointment) {
+        this.appointments.add(appointment);
     }
 
-    public ArrayList<Appointment> findAppointments(String date, String month, String year) {
-        ArrayList<Appointment> appointments = new ArrayList<Appointment>();
-        for (Appointment appt : this.appointments) {
+    public void addAppointment(int id, String name, String description, String date) {
+        this.appointments.add(new Appointment(id, name, description, date));
+    }
 
-            if (date.equals(appt.getStartTime().get("Date")) &&
-                month.equals(appt.getStartTime().get("Month")) &&
-                year.equals(appt.getStartTime().get("Year"))) {
-                appointments.add(appt);
-            }
-
-        }
+    public ArrayList<Appointment> getAppointments() {
         return appointments;
+    }
+
+    public Appointment getAppointment(int id) {
+        for (Appointment apt : appointments) {
+            if (apt.getId() == id)
+                return apt;
+        }
+        return null;
     }
 }
