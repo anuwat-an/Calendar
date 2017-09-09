@@ -52,13 +52,14 @@ public class ConfirmDeleteCtrl {
                 Statement statement = connection.createStatement();
                 statement.executeUpdate(query);
 
+                /**
+                 * #EDIT add and use calendar's method to remove
+                 */
+                this.mainController.getCalendar().deleteAppointment(deleteID);
+                this.mainController.setAppointmentsDetails();
+
                 connection.close();
             }
-            /**
-             * #EDIT add and use calendar's method to remove
-             */
-            this.mainController.getCalendar().getAppointments().remove(this.mainController.getCalendar().getAppointment(deleteID));
-            this.mainController.setAppointmentsDetails();
 
             this.stage.close();
         } catch (ClassNotFoundException e) {
@@ -70,7 +71,7 @@ public class ConfirmDeleteCtrl {
 
     @FXML
     public void cancelDel() {
-        stage.close();
+        this.stage.close();
     }
 
     public void setDeleteID(int id) {

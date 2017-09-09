@@ -4,14 +4,16 @@
 
 package Model;
 
+import java.time.LocalDateTime;
+
 public class Appointment {
 
     private int id;
     private String name;
     private String description;
-    private String date;
+    private LocalDateTime date;
 
-    public Appointment(int id, String name, String description, String date) {
+    public Appointment(int id, String name, String description, LocalDateTime date) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -30,7 +32,7 @@ public class Appointment {
         return description;
     }
 
-    public String getDate() { return date; }
+    public LocalDateTime getDate() { return date; }
 
     public void setName(String name) {
         this.name = name;
@@ -40,13 +42,14 @@ public class Appointment {
         this.description = description;
     }
 
-    public void setDate(String date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 
     @Override
     public String toString() {
-        return this.id + ": " + this.date + "\n" +
+        return this.id + ": " + this.date.getDayOfWeek() + " " +
+                this.date.getDayOfMonth()+"/"+this.date.getMonthValue()+"/"+this.date.getYear() + "\n" +
                 this.name + "\n" +
                 this.description + "\n";
     }

@@ -18,8 +18,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Locale;
 
 public class EditApptCtrl {
 
@@ -46,6 +48,9 @@ public class EditApptCtrl {
     private MainController mainController;
     private Appointment appointment;
 
+    private Date date = new Date();
+    private DateFormat dateFormat = new SimpleDateFormat("u dd/MM/yyyy HH:mm", Locale.US);
+
     @FXML
     public void initialize() {
         for (int i=0; i<=23; i++) {
@@ -60,8 +65,6 @@ public class EditApptCtrl {
                 min = "0";
             this.minute.getItems().add(min + i);
         }
-
-        /** set init name, desc, time, and maybe day */
     }
 
     @FXML
@@ -81,38 +84,44 @@ public class EditApptCtrl {
 
                 /** query add appointments */
                 if (connection != null) {
-                    String dayOfMonth = localDate.getDayOfMonth()+"";
-                    String monthValue = localDate.getMonthValue()+"";
-                    String year = localDate.getYear()+"";
-                    if (Integer.parseInt(dayOfMonth) < 10)
-                        dayOfMonth = "0"+dayOfMonth;
-                    if (Integer.parseInt(monthValue) < 10)
-                        monthValue = "0"+monthValue;
-                    String dateAndTime = dayOfMonth+"/"+monthValue+"/"+year+" "+hour+":"+minute;
+                    /**
+                     * date format string
+                     */
+                    String date = localDate.getDayOfWeek().getValue() + " " +
+                            localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
+                            hour+":"+minute;
 
+                    /**
+                     * update appointment on db
+                     */
                     String query = "update Appointments " +
                             "set name='" + name +
                             "', description='" + description +
-                            "', date='" + dateAndTime +
+                            "', date='" + date +
                             "' where id=" + this.editID;
                     Statement statement = connection.createStatement();
                     statement.executeUpdate(query);
 
                     /**
-                     * #EDIT add and use calendar's method to edit
+                     * edit appointment on mc.calendar
                      */
                     this.appointment.setName(name);
                     this.appointment.setDescription(description);
-                    this.appointment.setDate(dateAndTime);
+                    this.date = dateFormat.parse(date);
+                    LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
+                    this.appointment.setDate(localDateTime);
+
+                    this.mainController.setAppointmentsDetails();
 
                     connection.close();
                 }
-                this.mainController.setAppointmentsDetails();
 
                 this.stage.close();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
@@ -120,35 +129,29 @@ public class EditApptCtrl {
 
     @FXML
     public void cancelEdit() {
-        stage.close();
+        this.stage.close();
     }
 
     public void setEditID(int id) {
         this.appointment = mainController.getCalendar().getAppointment(id);
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        Date date = new Date();
-        try {
-            date = dateFormat.parse(appointment.getDate());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
         this.editID = id;
         this.appointmentIDLabel.setText(this.appointmentIDLabel.getText()+id);
-        this.datePicker.setValue(localDate.plusYears(543).minusDays(9));
-        this.name.setText(appointment.getName());
-        this.description.setText(appointment.getDescription());
-        int hour = date.getHours();
-        int minute = date.getMinutes();
-        if (hour < 10)
-            this.hour.setValue("0"+hour);
-        else
-            this.hour.setValue(""+hour);
-        if (minute < 10)
-            this.minute.setValue("0"+minute);
-        else
-            this.minute.setValue(""+minute);
+        this.datePicker.setValue(this.appointment.getDate().toLocalDate());
+        this.name.setText(this.appointment.getName());
+        this.description.setText(this.appointment.getDescription());
+        this.hour.setValue(this.appointment.getDate().getHour()+"");
+        this.minute.setValue(this.appointment.getDate().getMinute()+"");
+//        int hour = date.getHours();
+//        int minute = date.getMinutes();
+//        if (hour < 10)
+//            this.hour.setValue("0"+hour);
+//        else
+//            this.hour.setValue(""+hour);
+//        if (minute < 10)
+//            this.minute.setValue("0"+minute);
+//        else
+//            this.minute.setValue(""+minute);
     }
 
     public void setStage(Stage stage) {

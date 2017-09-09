@@ -4,6 +4,7 @@
 
 package Model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Calendar {
@@ -14,8 +15,12 @@ public class Calendar {
         this.appointments.add(appointment);
     }
 
-    public void addAppointment(int id, String name, String description, String date) {
+    public void addAppointment(int id, String name, String description, LocalDateTime date) {
         this.appointments.add(new Appointment(id, name, description, date));
+    }
+
+    public void deleteAppointment(int id) {
+        this.appointments.remove(getAppointment(id));
     }
 
     public ArrayList<Appointment> getAppointments() {

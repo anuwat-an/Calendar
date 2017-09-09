@@ -15,8 +15,15 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainController {
 
@@ -52,11 +59,11 @@ public class MainController {
 
     private int lastID;
 
-//    private Date date = new Date();
-//    private DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+    private Date date = new Date();
+    private DateFormat dateFormat = new SimpleDateFormat("u dd/MM/yyyy HH:mm", Locale.US);
 
     @FXML
-    public void initialize() throws IOException {
+    public void initialize() {
 
         for (int i=0; i<=23; i++) {
             String hour = "";
@@ -76,7 +83,7 @@ public class MainController {
     }
 
     @FXML
-    private void loadCalendar() throws IOException {
+    private void loadCalendar() {
         this.calendar = new Calendar();
         try {
             /** setup */
@@ -96,18 +103,26 @@ public class MainController {
                     String description = resultSet.getString("description");
                     String date = resultSet.getString("date");
 
-                    Appointment appointment = new Appointment(id, name, description, date);
-
+                    /**
+                     * add appointments from db to this.calendar
+                     */
+                    this.date = dateFormat.parse(date);
+                    LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
+                    Appointment appointment = new Appointment(id, name, description, localDateTime);
                     this.calendar.addAppointment(appointment);
 //                    this.lastID = id + 1;
                 }
-
                 connection.close();
+
             }
-            setAppointmentsDetails();
+
+//            setAppointmentsDetails();
+
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
             e.printStackTrace();
         }
     }
@@ -116,22 +131,25 @@ public class MainController {
     public void setAppointmentsDetails() {
         this.appointmentID.getItems().clear();
         this.appointmentsDetails.clear();
-//        this.calendar.getAppointments().sort(new Comparator<Appointment>() {
-//            @Override
-//            public int compare(Appointment o1, Appointment o2) {
-//                return o1.getDate().compareTo(o2.getDate());
-//            }
-//        });
+        this.calendar.getAppointments().sort(new Comparator<Appointment>() {
+            @Override
+            public int compare(Appointment o1, Appointment o2) {
+                return o1.getDate().compareTo(o2.getDate());
+            }
+        });
+        int aptID = 0;
         for (Appointment apt : this.calendar.getAppointments()) {
-            int aptID = apt.getId();
+            if (apt.getDate().equals(this.datePicker.getValue())) {
+                aptID = apt.getId();
 
-            this.appointmentID.getItems().add(aptID);
-            this.appointmentsDetails.appendText(apt.toString()+"\n");
-
-            if(aptID >= lastID)
-                lastID = aptID + 1;
+                this.appointmentID.getItems().add(aptID);
+                this.appointmentsDetails.appendText(apt.toString() + "\n");
+            }
 
         }
+        if(aptID >= lastID)
+            lastID = aptID + 1;
+
         int length = this.appointmentsDetails.getText().length();
         if (length > 0)
             this.appointmentsDetails.deleteText(length-1, length);
@@ -154,28 +172,30 @@ public class MainController {
 
                 /** query add appointments */
                 if (connection != null) {
-                    String dayOfMonth = localDate.getDayOfMonth()+"";
-                    String monthValue = localDate.getMonthValue()+"";
-                    String year = localDate.getYear()+"";
-                    if (Integer.parseInt(dayOfMonth) < 10)
-                        dayOfMonth = "0"+dayOfMonth;
-                    if (Integer.parseInt(monthValue) < 10)
-                        monthValue = "0"+monthValue;
-                    String dateAndTime = dayOfMonth+"/"+monthValue+"/"+year+" "+hour+":"+minute;
+                    /**
+                     * date format string
+                     */
+                    String date = localDate.getDayOfWeek().getValue() + " " +
+                                    localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
+                                    hour+":"+minute;
 
+                    /**
+                     * add appointment to db
+                     */
                     String query = "insert into Appointments values ("+
-                                    lastID+",'"+name+"','"+description+"','"+dateAndTime+"')";
+                                    lastID+", '"+name+"' , '"+description+"' , '"+date+"')";
                     Statement statement = connection.createStatement();
                     statement.executeUpdate(query);
 
-                    Appointment appointment = new Appointment(lastID, name, description, dateAndTime);
-
+                    /**
+                     * add appointment to this.calendar
+                     */
+                    this.date = dateFormat.parse(date);
+                    LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
+                    Appointment appointment = new Appointment(lastID, name, description, localDateTime);
                     this.calendar.addAppointment(appointment);
-                    this.appointmentID.getItems().add(lastID);
-                    if (lastID > 0)
-                        this.appointmentsDetails.appendText("\n"+appointment.toString());
-                    else
-                        this.appointmentsDetails.appendText(appointment.toString());
+
+                    setAppointmentsDetails();
 
                     lastID += 1;
                     clearFields();
@@ -185,6 +205,8 @@ public class MainController {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
@@ -236,9 +258,9 @@ public class MainController {
                 stage.setTitle("Edit Appointment");
 
                 EditApptCtrl controller = loader.getController();
+                controller.setEditID(this.appointmentID.getValue());
                 controller.setStage(stage);
                 controller.setMainController(this);
-                controller.setEditID(this.appointmentID.getValue());
 
                 stage.showAndWait();
             }
@@ -247,39 +269,6 @@ public class MainController {
             e.printStackTrace();
         }
     }
-
-//    @FXML
-//    public void findAppointments() {
-//        appointments.clear();
-//        String[] date = (this.datePicker.getValue() + "").split("-");
-//        ArrayList<Appointment> appts = calendar.findAppointments(date[2], date[1], date[0]);
-////        appts.addAll(calendar.findAppointments(datePicker[2]+1, datePicker[1], datePicker[0]));
-//        appts.sort(new Comparator<Appointment>() {
-//            @Override
-//            public int compare(Appointment o1, Appointment o2) {
-//                int timeO1 = 0;
-//                int timeO2 = 1;
-//                try {
-//                    timeO1 = Integer.parseInt(o1.getStartTime().get("Hour"))*3600
-//                            + Integer.parseInt(o1.getStartTime().get("Minute"))*60;
-//                    timeO2 = Integer.parseInt(o2.getStartTime().get("Hour"))*3600
-//                            + Integer.parseInt(o2.getStartTime().get("Minute"))*60;
-//                }
-//                catch (Exception e) {
-//                    return -1;
-//                }
-//                return timeO1-timeO2;
-//            }
-//        });
-//        if (appts.size() != 0) {
-//            for (Appointment appt : appts) {
-//                appointments.appendText(appt.toString());
-//            }
-//        }
-//        else {
-//            appointments.setText("No appointment on this day:\n" + date[2]+"/"+date[1]+"/"+date[0]);
-//        }
-//    }
 
     public Calendar getCalendar() {
         return this.calendar;
