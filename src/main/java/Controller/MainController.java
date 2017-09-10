@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
@@ -38,6 +39,8 @@ public class MainController {
     private ComboBox<String> apptHour;
     @FXML
     private ComboBox<String> apptMinute;
+    @FXML
+    private ComboBox<String> repeatComboBox;
     @FXML
     private Button addButton;
     @FXML
@@ -78,6 +81,11 @@ public class MainController {
             this.apptMinute.getItems().add(min + i);
         }
 
+        this.repeatComboBox.getItems().add("NONE");
+        this.repeatComboBox.getItems().add("DAILY");
+        this.repeatComboBox.getItems().add("WEEKLY");
+        this.repeatComboBox.getItems().add("MONTHLY");
+
         loadCalendar();
 
     }
@@ -102,15 +110,17 @@ public class MainController {
                     String name = resultSet.getString("name");
                     String description = resultSet.getString("description");
                     String date = resultSet.getString("date");
+                    String repeat = resultSet.getString("repeat");
 
                     /**
-                     * add appointments from db to this.calendar
+                     * create LocalDateTime to add to appointment
+                     * add appointment from db to this.calendar
                      */
                     this.date = dateFormat.parse(date);
                     LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-                    Appointment appointment = new Appointment(id, name, description, localDateTime);
+                    Appointment appointment = new Appointment(id, name, description, localDateTime, repeat);
                     this.calendar.addAppointment(appointment);
-//                    this.lastID = id + 1;
+                    this.lastID = id + 1;
                 }
                 connection.close();
 
@@ -131,24 +141,53 @@ public class MainController {
     public void setAppointmentsDetails() {
         this.appointmentID.getItems().clear();
         this.appointmentsDetails.clear();
-        this.calendar.getAppointments().sort(new Comparator<Appointment>() {
+
+        ArrayList<Appointment> selectedAppts = new ArrayList<>();
+        for (Appointment appt : this.calendar.getAppointments()) {
+            if (appt.getDate().toLocalDate().equals(this.datePicker.getValue()) || "DAILY".equalsIgnoreCase(appt.getRepeat())) {
+                selectedAppts.add(appt);
+            }
+            else if ("WEEKLY".equalsIgnoreCase(appt.getRepeat()) &&
+                    this.datePicker.getValue().getDayOfWeek().getValue() == appt.getDate().getDayOfWeek().getValue()) {
+                selectedAppts.add(appt);
+            }
+            else if ("MONTHLY".equalsIgnoreCase(appt.getRepeat()) &&
+                    this.datePicker.getValue().getDayOfMonth() == appt.getDate().getDayOfMonth()) {
+                selectedAppts.add(appt);
+            }
+        }
+        selectedAppts.sort(new Comparator<Appointment>() {
             @Override
             public int compare(Appointment o1, Appointment o2) {
+                if ("MONTHLY".equalsIgnoreCase(o1.getRepeat()) && "MONTHLY".equalsIgnoreCase(o2.getRepeat()))
+                    return o1.getDate().compareTo(o2.getDate());
+                else if ("MONTHLY".equalsIgnoreCase(o1.getRepeat()))
+                    return 1;
+                else if ("MONTHLY".equalsIgnoreCase(o2.getRepeat()))
+                    return -1;
+                else if ("WEEKLY".equalsIgnoreCase(o1.getRepeat()) && "WEEKLY".equalsIgnoreCase(o2.getRepeat()))
+                    return o1.getDate().compareTo(o2.getDate());
+                else if ("WEEKLY".equalsIgnoreCase(o1.getRepeat()))
+                    return 1;
+                else if ("WEEKLY".equalsIgnoreCase(o2.getRepeat()))
+                    return -1;
+                else if ("DAILY".equalsIgnoreCase(o1.getRepeat()) && "DAILY".equalsIgnoreCase(o2.getRepeat()))
+                    return o1.getDate().compareTo(o2.getDate());
+                else if ("DAILY".equalsIgnoreCase(o1.getRepeat()))
+                    return 1;
+                else if ("DAILY".equalsIgnoreCase(o2.getRepeat()))
+                    return -1;
                 return o1.getDate().compareTo(o2.getDate());
             }
         });
-        int aptID = 0;
-        for (Appointment apt : this.calendar.getAppointments()) {
-            if (apt.getDate().equals(this.datePicker.getValue())) {
-                aptID = apt.getId();
 
-                this.appointmentID.getItems().add(aptID);
-                this.appointmentsDetails.appendText(apt.toString() + "\n");
-            }
+        for (Appointment apt : selectedAppts) {
+            int aptID = apt.getId();
+
+            this.appointmentID.getItems().add(aptID);
+            this.appointmentsDetails.appendText(apt.toString() + "\n");
 
         }
-        if(aptID >= lastID)
-            lastID = aptID + 1;
 
         int length = this.appointmentsDetails.getText().length();
         if (length > 0)
@@ -162,8 +201,9 @@ public class MainController {
         String description = this.apptDescription.getText();
         String hour = this.apptHour.getValue();
         String minute = this.apptMinute.getValue();
+        String repeat = this.repeatComboBox.getValue();
 
-        if (localDate != null && !"".equals(name) && hour != null && minute != null) {
+        if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
             try {
                 /** setup */
                 Class.forName("org.sqlite.JDBC");
@@ -183,16 +223,17 @@ public class MainController {
                      * add appointment to db
                      */
                     String query = "insert into Appointments values ("+
-                                    lastID+", '"+name+"' , '"+description+"' , '"+date+"')";
+                                    lastID+", '"+name+"' , '"+description+"' , '"+date+"' , '"+repeat+"')";
                     Statement statement = connection.createStatement();
                     statement.executeUpdate(query);
 
                     /**
-                     * add appointment to this.calendar
+                     * create LocalDateTime to add to appointment
+                     * add appointment from db to this.calendar
                      */
                     this.date = dateFormat.parse(date);
                     LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-                    Appointment appointment = new Appointment(lastID, name, description, localDateTime);
+                    Appointment appointment = new Appointment(lastID, name, description, localDateTime, repeat);
                     this.calendar.addAppointment(appointment);
 
                     setAppointmentsDetails();
@@ -216,10 +257,12 @@ public class MainController {
     public void clearFields() {
         this.apptName.clear();
         this.apptDescription.clear();
-        this.apptHour.setPromptText("Hr");
         this.apptHour.setValue(null);
-        this.apptMinute.setPromptText("Min");
+        this.apptHour.setPromptText("Hr");
         this.apptMinute.setValue(null);
+        this.apptMinute.setPromptText("Min");
+        this.repeatComboBox.setValue(null);
+        this.repeatComboBox.setPromptText("Repeat Option");
     }
 
     @FXML
@@ -234,9 +277,9 @@ public class MainController {
                 stage.setTitle("Delete Appointment");
 
                 ConfirmDeleteCtrl controller = loader.getController();
-                controller.setDeleteID(this.appointmentID.getValue());
                 controller.setStage(stage);
                 controller.setMainController(this);
+                controller.setDeleteID(this.appointmentID.getValue());
 
                 stage.showAndWait();
             }
@@ -258,9 +301,9 @@ public class MainController {
                 stage.setTitle("Edit Appointment");
 
                 EditApptCtrl controller = loader.getController();
-                controller.setEditID(this.appointmentID.getValue());
                 controller.setStage(stage);
                 controller.setMainController(this);
+                controller.setEditID(this.appointmentID.getValue());
 
                 stage.showAndWait();
             }

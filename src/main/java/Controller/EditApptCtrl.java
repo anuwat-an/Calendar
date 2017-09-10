@@ -38,6 +38,8 @@ public class EditApptCtrl {
     @FXML
     private ComboBox<String> minute;
     @FXML
+    private ComboBox<String> repeatComboBox;
+    @FXML
     private Button confirmBtn;
     @FXML
     private Button cancelBtn;
@@ -65,6 +67,11 @@ public class EditApptCtrl {
                 min = "0";
             this.minute.getItems().add(min + i);
         }
+
+        this.repeatComboBox.getItems().add("NONE");
+        this.repeatComboBox.getItems().add("DAILY");
+        this.repeatComboBox.getItems().add("WEEKLY");
+        this.repeatComboBox.getItems().add("MONTHLY");
     }
 
     @FXML
@@ -74,8 +81,9 @@ public class EditApptCtrl {
         String description = this.description.getText();
         String hour = this.hour.getValue();
         String minute = this.minute.getValue();
+        String repeat = this.repeatComboBox.getValue();
 
-        if (localDate != null && !"".equals(name) && hour != null && minute != null) {
+        if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
             try {
                 /** setup */
                 Class.forName("org.sqlite.JDBC");
@@ -98,6 +106,7 @@ public class EditApptCtrl {
                             "set name='" + name +
                             "', description='" + description +
                             "', date='" + date +
+                            "', repeat='" + repeat +
                             "' where id=" + this.editID;
                     Statement statement = connection.createStatement();
                     statement.executeUpdate(query);
@@ -110,6 +119,7 @@ public class EditApptCtrl {
                     this.date = dateFormat.parse(date);
                     LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
                     this.appointment.setDate(localDateTime);
+                    this.appointment.setRepeat(repeat);
 
                     this.mainController.setAppointmentsDetails();
 
@@ -142,6 +152,7 @@ public class EditApptCtrl {
         this.description.setText(this.appointment.getDescription());
         this.hour.setValue(this.appointment.getDate().getHour()+"");
         this.minute.setValue(this.appointment.getDate().getMinute()+"");
+        this.repeatComboBox.setValue(this.appointment.getRepeat());
 //        int hour = date.getHours();
 //        int minute = date.getMinutes();
 //        if (hour < 10)

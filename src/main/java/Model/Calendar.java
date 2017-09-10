@@ -15,8 +15,8 @@ public class Calendar {
         this.appointments.add(appointment);
     }
 
-    public void addAppointment(int id, String name, String description, LocalDateTime date) {
-        this.appointments.add(new Appointment(id, name, description, date));
+    public void addAppointment(int id, String name, String description, LocalDateTime date, String repeat) {
+        this.appointments.add(new Appointment(id, name, description, date, repeat));
     }
 
     public void deleteAppointment(int id) {
