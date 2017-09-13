@@ -93,6 +93,8 @@ public class MainController {
     @FXML
     private void loadCalendar() {
         this.calendar = new Calendar();
+//        ResultSet resultSet = DatabaseHandler.loadCalendar();
+
         try {
             /** setup */
             Class.forName("org.sqlite.JDBC");
@@ -122,12 +124,10 @@ public class MainController {
                     this.calendar.addAppointment(appointment);
                     this.lastID = id + 1;
                 }
+
                 connection.close();
 
             }
-
-//            setAppointmentsDetails();
-
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -192,6 +192,8 @@ public class MainController {
         int length = this.appointmentsDetails.getText().length();
         if (length > 0)
             this.appointmentsDetails.deleteText(length-1, length);
+        else
+            this.appointmentsDetails.appendText("There is no appointment on this day.");
     }
 
     @FXML
@@ -204,49 +206,29 @@ public class MainController {
         String repeat = this.repeatComboBox.getValue();
 
         if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
+            /**
+             * date format string
+             */
+            String date = localDate.getDayOfWeek().getValue() + " " +
+                    localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
+                    hour+":"+minute;
+
+            DatabaseHandler.addAppointment(date, name, description, repeat, lastID);
+
             try {
-                /** setup */
-                Class.forName("org.sqlite.JDBC");
-                String dbURL = "jdbc:sqlite:Appointments.db";
-                Connection connection = DriverManager.getConnection(dbURL);
+                /**
+                 * create LocalDateTime to add to appointment
+                 * add appointment from db to this.calendar
+                 */
+                this.date = dateFormat.parse(date);
+                LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
+                Appointment appointment = new Appointment(lastID, name, description, localDateTime, repeat);
+                this.calendar.addAppointment(appointment);
 
-                /** query add appointments */
-                if (connection != null) {
-                    /**
-                     * date format string
-                     */
-                    String date = localDate.getDayOfWeek().getValue() + " " +
-                                    localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
-                                    hour+":"+minute;
+                setAppointmentsDetails();
 
-                    /**
-                     * add appointment to db
-                     */
-                    String query = "insert into Appointments values ("+
-                                    lastID+", '"+name+"' , '"+description+"' , '"+date+"' , '"+repeat+"')";
-                    Statement statement = connection.createStatement();
-                    statement.executeUpdate(query);
-
-                    /**
-                     * create LocalDateTime to add to appointment
-                     * add appointment from db to this.calendar
-                     */
-                    this.date = dateFormat.parse(date);
-                    LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-                    Appointment appointment = new Appointment(lastID, name, description, localDateTime, repeat);
-                    this.calendar.addAppointment(appointment);
-
-                    setAppointmentsDetails();
-
-                    lastID += 1;
-                    clearFields();
-
-                    connection.close();
-                }
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
-                e.printStackTrace();
+                lastID += 1;
+                clearFields();
             } catch (ParseException e) {
                 e.printStackTrace();
             }

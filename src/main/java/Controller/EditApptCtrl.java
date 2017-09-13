@@ -84,53 +84,29 @@ public class EditApptCtrl {
         String repeat = this.repeatComboBox.getValue();
 
         if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
+            /**
+             * date format string
+             */
+            String date = localDate.getDayOfWeek().getValue() + " " +
+                    localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
+                    hour+":"+minute;
+
+            DatabaseHandler.editAppointment(date, name, description, repeat, editID);
+
             try {
-                /** setup */
-                Class.forName("org.sqlite.JDBC");
-                String dbURL = "jdbc:sqlite:Appointments.db";
-                Connection connection = DriverManager.getConnection(dbURL);
+                /**
+                 * edit appointment on mc.calendar
+                 */
+                this.appointment.setName(name);
+                this.appointment.setDescription(description);
+                this.date = dateFormat.parse(date);
+                LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
+                this.appointment.setDate(localDateTime);
+                this.appointment.setRepeat(repeat);
 
-                /** query add appointments */
-                if (connection != null) {
-                    /**
-                     * date format string
-                     */
-                    String date = localDate.getDayOfWeek().getValue() + " " +
-                            localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
-                            hour+":"+minute;
-
-                    /**
-                     * update appointment on db
-                     */
-                    String query = "update Appointments " +
-                            "set name='" + name +
-                            "', description='" + description +
-                            "', date='" + date +
-                            "', repeat='" + repeat +
-                            "' where id=" + this.editID;
-                    Statement statement = connection.createStatement();
-                    statement.executeUpdate(query);
-
-                    /**
-                     * edit appointment on mc.calendar
-                     */
-                    this.appointment.setName(name);
-                    this.appointment.setDescription(description);
-                    this.date = dateFormat.parse(date);
-                    LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-                    this.appointment.setDate(localDateTime);
-                    this.appointment.setRepeat(repeat);
-
-                    this.mainController.setAppointmentsDetails();
-
-                    connection.close();
-                }
+                this.mainController.setAppointmentsDetails();
 
                 this.stage.close();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
-                e.printStackTrace();
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -153,16 +129,6 @@ public class EditApptCtrl {
         this.hour.setValue(this.appointment.getDate().getHour()+"");
         this.minute.setValue(this.appointment.getDate().getMinute()+"");
         this.repeatComboBox.setValue(this.appointment.getRepeat());
-//        int hour = date.getHours();
-//        int minute = date.getMinutes();
-//        if (hour < 10)
-//            this.hour.setValue("0"+hour);
-//        else
-//            this.hour.setValue(""+hour);
-//        if (minute < 10)
-//            this.minute.setValue("0"+minute);
-//        else
-//            this.minute.setValue(""+minute);
     }
 
     public void setStage(Stage stage) {
