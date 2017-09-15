@@ -86,7 +86,7 @@ public class MainController {
         this.repeatComboBox.getItems().add("WEEKLY");
         this.repeatComboBox.getItems().add("MONTHLY");
 
-        loadCalendar();
+        this.loadCalendar();
 
     }
 
