@@ -88,12 +88,14 @@ public class MainController {
 
         this.loadCalendar();
 
+        this.datePicker.setValue(LocalDate.now());
+        this.setAppointmentsDetails();
+
     }
 
     @FXML
     private void loadCalendar() {
         this.calendar = new Calendar();
-//        ResultSet resultSet = DatabaseHandler.loadCalendar();
 
         try {
             /** setup */
@@ -204,18 +206,29 @@ public class MainController {
         String hour = this.apptHour.getValue();
         String minute = this.apptMinute.getValue();
         String repeat = this.repeatComboBox.getValue();
+        String date = localDate.getDayOfWeek().getValue() + " " +
+                localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
+                hour+":"+minute;
 
         if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
-            /**
-             * date format string
-             */
-            String date = localDate.getDayOfWeek().getValue() + " " +
-                    localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
-                    hour+":"+minute;
-
-            DatabaseHandler.addAppointment(date, name, description, repeat, lastID);
-
             try {
+                /** setup */
+                Class.forName("org.sqlite.JDBC");
+                String dbURL = "jdbc:sqlite:Appointments.db";
+                Connection connection = DriverManager.getConnection(dbURL);
+
+                /** query add appointments */
+                if (connection != null) {
+                    /**
+                     * add appointment to db
+                     */
+                    String query = "insert into Appointments values ("+
+                            lastID+", '"+name+"' , '"+description+"' , '"+date+"' , '"+repeat+"')";
+                    Statement statement = connection.createStatement();
+                    statement.executeUpdate(query);
+
+                    connection.close();
+                }
                 /**
                  * create LocalDateTime to add to appointment
                  * add appointment from db to this.calendar
@@ -231,6 +244,10 @@ public class MainController {
                 clearFields();
             } catch (ParseException e) {
                 e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -240,11 +257,11 @@ public class MainController {
         this.apptName.clear();
         this.apptDescription.clear();
         this.apptHour.setValue(null);
-        this.apptHour.setPromptText("Hr");
         this.apptMinute.setValue(null);
-        this.apptMinute.setPromptText("Min");
         this.repeatComboBox.setValue(null);
-        this.repeatComboBox.setPromptText("Repeat Option");
+//        this.apptHour.setPromptText("Hr");
+//        this.apptMinute.setPromptText("Min");
+//        this.repeatComboBox.setPromptText("Repeat Option");
     }
 
     @FXML
@@ -265,7 +282,6 @@ public class MainController {
 
                 stage.showAndWait();
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -289,7 +305,6 @@ public class MainController {
 
                 stage.showAndWait();
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }

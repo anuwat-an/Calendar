@@ -82,18 +82,33 @@ public class EditApptCtrl {
         String hour = this.hour.getValue();
         String minute = this.minute.getValue();
         String repeat = this.repeatComboBox.getValue();
+        String date = localDate.getDayOfWeek().getValue() + " " +
+                localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
+                hour+":"+minute;
 
         if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
-            /**
-             * date format string
-             */
-            String date = localDate.getDayOfWeek().getValue() + " " +
-                    localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
-                    hour+":"+minute;
-
-            DatabaseHandler.editAppointment(date, name, description, repeat, editID);
-
             try {
+                /** setup */
+                Class.forName("org.sqlite.JDBC");
+                String dbURL = "jdbc:sqlite:Appointments.db";
+                Connection connection = DriverManager.getConnection(dbURL);
+
+                /** query edit appointments */
+                if (connection != null) {
+                    /**
+                     * update appointment on db
+                     */
+                    String query = "update Appointments " +
+                            "set name='" + name +
+                            "', description='" + description +
+                            "', date='" + date +
+                            "', repeat='" + repeat +
+                            "' where id=" + editID;
+                    Statement statement = connection.createStatement();
+                    statement.executeUpdate(query);
+
+                    connection.close();
+                }
                 /**
                  * edit appointment on mc.calendar
                  */
@@ -108,6 +123,10 @@ public class EditApptCtrl {
 
                 this.stage.close();
             } catch (ParseException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }

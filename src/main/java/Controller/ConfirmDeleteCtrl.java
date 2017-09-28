@@ -29,26 +29,35 @@ public class ConfirmDeleteCtrl {
     private int deleteID;
     private MainController mainController;
 
-//    public ConfirmDeleteCtrl(int deleteID) {
-//        this.deleteID = deleteID;
-//    }
-
-//    @FXML
-//    public void initialize() {
-//
-//    }
-
     @FXML
     public void confirmDel() {
-        DatabaseHandler.deleteAppointment(deleteID);
+        try {
+            /** setup */
+            Class.forName("org.sqlite.JDBC");
+            String dbURL = "jdbc:sqlite:Appointments.db";
+            Connection connection = DriverManager.getConnection(dbURL);
 
-        /**
-         * #EDIT add and use calendar's method to remove
-         */
-        this.mainController.getCalendar().deleteAppointment(deleteID);
-        this.mainController.setAppointmentsDetails();
+            /** query delete appointments */
+            if (connection != null) {
+                String query = "delete from Appointments where id="+deleteID;
+                Statement statement = connection.createStatement();
+                statement.executeUpdate(query);
 
-        this.stage.close();
+                connection.close();
+            }
+
+            /**
+             * #EDIT add and use calendar's method to remove
+             */
+            this.mainController.getCalendar().deleteAppointment(deleteID);
+            this.mainController.setAppointmentsDetails();
+
+            this.stage.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
