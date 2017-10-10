@@ -15,7 +15,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class ConfirmDeleteCtrl {
+public class DeletePageController {
 
     @FXML
     private Label textLabel;

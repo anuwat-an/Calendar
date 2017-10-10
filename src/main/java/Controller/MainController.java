@@ -4,8 +4,8 @@
 
 package Controller;
 
-import Model.Appointment;
-import Model.Calendar;
+import DataSource.AppointmentDataSource;
+import Model.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,37 +32,38 @@ public class MainController {
     @FXML
     private DatePicker datePicker;
     @FXML
-    private TextField apptName;
+    private TextField name;
     @FXML
-    private TextArea apptDescription;
+    private TextArea description;
     @FXML
-    private ComboBox<String> apptHour;
+    private ComboBox<String> hour;
     @FXML
-    private ComboBox<String> apptMinute;
+    private ComboBox<String> minute;
     @FXML
     private ComboBox<String> repeatComboBox;
     @FXML
     private Button addButton;
     @FXML
-    private Button clrButton;
+    private Button clearButton;
 
     /** Column 2 */
     @FXML
-    private TextArea appointmentsDetails;
+    private TextArea appointmentDetails;
     @FXML
     private ComboBox<Integer> appointmentID;
     @FXML
     private Button editButton;
     @FXML
-    private Button deleButton;
+    private Button deleteButton;
     @FXML
-    private Button restButton;
+    private Button resetButton;
 
     private Calendar calendar;
+    private AppointmentDataSource dataSource;
 
     private int lastID;
 
-    private Date date = new Date();
+    private java.util.Date date = new Date();
     private DateFormat dateFormat = new SimpleDateFormat("u dd/MM/yyyy HH:mm", Locale.US);
 
     @FXML
@@ -72,13 +73,13 @@ public class MainController {
             String hour = "";
             if (i < 10)
                 hour = "0";
-            this.apptHour.getItems().add(hour + i);
+            this.hour.getItems().add(hour + i);
         }
         for (int i=0; i<=59; i++) {
             String min = "";
             if (i < 10)
                 min = "0";
-            this.apptMinute.getItems().add(min + i);
+            this.minute.getItems().add(min + i);
         }
 
         this.repeatComboBox.getItems().add("NONE");
@@ -96,53 +97,15 @@ public class MainController {
     @FXML
     private void loadCalendar() {
         this.calendar = new Calendar();
+        this.calendar.setAppointments(dataSource.loadData());
 
-        try {
-            /** setup */
-            Class.forName("org.sqlite.JDBC");
-            String dbURL = "jdbc:sqlite:Appointments.db";
-            Connection connection = DriverManager.getConnection(dbURL);
-
-            /** query get appointments */
-            if (connection != null) {
-                String query = "select * from Appointments";
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(query);
-
-                while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String name = resultSet.getString("name");
-                    String description = resultSet.getString("description");
-                    String date = resultSet.getString("date");
-                    String repeat = resultSet.getString("repeat");
-
-                    /**
-                     * create LocalDateTime to add to appointment
-                     * add appointment from db to this.calendar
-                     */
-                    this.date = dateFormat.parse(date);
-                    LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-                    Appointment appointment = new Appointment(id, name, description, localDateTime, repeat);
-                    this.calendar.addAppointment(appointment);
-                    this.lastID = id + 1;
-                }
-
-                connection.close();
-
-            }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        this.lastID = dataSource.getLastID();
     }
 
     @FXML
     public void setAppointmentsDetails() {
         this.appointmentID.getItems().clear();
-        this.appointmentsDetails.clear();
+        this.appointmentDetails.clear();
 
         ArrayList<Appointment> selectedAppts = new ArrayList<>();
         for (Appointment appt : this.calendar.getAppointments()) {
@@ -187,66 +150,55 @@ public class MainController {
             int aptID = apt.getId();
 
             this.appointmentID.getItems().add(aptID);
-            this.appointmentsDetails.appendText(apt.toString() + "\n");
+            this.appointmentDetails.appendText(apt.toString() + "\n");
 
         }
 
-        int length = this.appointmentsDetails.getText().length();
+        int length = this.appointmentDetails.getText().length();
         if (length > 0)
-            this.appointmentsDetails.deleteText(length-1, length);
+            this.appointmentDetails.deleteText(length-1, length);
         else
-            this.appointmentsDetails.appendText("There is no appointment on this day.");
+            this.appointmentDetails.appendText("There is no appointment on this day.");
     }
 
     @FXML
     public void addAppointment() {
         LocalDate localDate = this.datePicker.getValue();
-        String name = this.apptName.getText();
-        String description = this.apptDescription.getText();
-        String hour = this.apptHour.getValue();
-        String minute = this.apptMinute.getValue();
+        String name = this.name.getText();
+        String description = this.description.getText();
+        String hour = this.hour.getValue();
+        String minute = this.minute.getValue();
         String repeat = this.repeatComboBox.getValue();
         String date = localDate.getDayOfWeek().getValue() + " " +
                 localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
                 hour+":"+minute;
 
         if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
+
             try {
-                /** setup */
-                Class.forName("org.sqlite.JDBC");
-                String dbURL = "jdbc:sqlite:Appointments.db";
-                Connection connection = DriverManager.getConnection(dbURL);
-
-                /** query add appointments */
-                if (connection != null) {
-                    /**
-                     * add appointment to db
-                     */
-                    String query = "insert into Appointments values ("+
-                            lastID+", '"+name+"' , '"+description+"' , '"+date+"' , '"+repeat+"')";
-                    Statement statement = connection.createStatement();
-                    statement.executeUpdate(query);
-
-                    connection.close();
-                }
                 /**
                  * create LocalDateTime to add to appointment
                  * add appointment from db to this.calendar
                  */
                 this.date = dateFormat.parse(date);
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-                Appointment appointment = new Appointment(lastID, name, description, localDateTime, repeat);
+                Appointment appointment;
+                if ("DAILY".equalsIgnoreCase(repeat))
+                    appointment = new DailyAppointment(lastID, name, description, localDateTime);
+                else if ("WEEKLY".equalsIgnoreCase(repeat))
+                    appointment = new WeeklyAppointment(lastID, name, description, localDateTime);
+                else if ("MONTHLY".equalsIgnoreCase(repeat))
+                    appointment = new MonthlyAppointment(lastID, name, description, localDateTime);
+                else
+                    appointment = new NormalAppointment(lastID, name, description, localDateTime);
                 this.calendar.addAppointment(appointment);
 
-                setAppointmentsDetails();
+                this.dataSource.addData(appointment);
 
-                lastID += 1;
+                this.lastID += 1;
+                setAppointmentsDetails();
                 clearFields();
             } catch (ParseException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
@@ -254,37 +206,14 @@ public class MainController {
 
     @FXML
     public void clearFields() {
-        this.apptName.clear();
-        this.apptDescription.clear();
-        this.apptHour.setValue(null);
-        this.apptMinute.setValue(null);
+        this.name.clear();
+        this.description.clear();
+        this.hour.setValue(null);
+        this.minute.setValue(null);
         this.repeatComboBox.setValue(null);
-//        this.apptHour.setPromptText("Hr");
-//        this.apptMinute.setPromptText("Min");
+//        this.hour.setPromptText("Hr");
+//        this.minute.setPromptText("Min");
 //        this.repeatComboBox.setPromptText("Repeat Option");
-    }
-
-    @FXML
-    public void deleteAppointment() {
-        Stage stage = new Stage();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ConfirmDelete.fxml"));
-
-        try {
-            if (this.appointmentID.getValue() != null) {
-                stage.initOwner(deleButton.getScene().getWindow());
-                stage.setScene(new Scene((Parent) loader.load()));
-                stage.setTitle("Delete Appointment");
-
-                ConfirmDeleteCtrl controller = loader.getController();
-                controller.setStage(stage);
-                controller.setMainController(this);
-                controller.setDeleteID(this.appointmentID.getValue());
-
-                stage.showAndWait();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @FXML
@@ -293,24 +222,47 @@ public class MainController {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/EditAppointment.fxml"));
 
         try {
-            if (this.appointmentID.getValue() != null) {
+            if (appointmentID.getValue() != null) {
                 stage.initOwner(editButton.getScene().getWindow());
                 stage.setScene(new Scene((Parent) loader.load()));
                 stage.setTitle("Edit Appointment");
 
-                EditApptCtrl controller = loader.getController();
+                EditPageController controller = loader.getController();
                 controller.setStage(stage);
-                controller.setMainController(this);
-                controller.setEditID(this.appointmentID.getValue());
+                controller.setEditAppointment(calendar.getAppointment(appointmentID.getValue()));
 
                 stage.showAndWait();
+
+                setAppointmentsDetails();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public Calendar getCalendar() {
-        return this.calendar;
+    @FXML
+    public void deleteAppointment() {
+        Stage stage = new Stage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ConfirmDelete.fxml"));
+
+        try {
+            if (appointmentID.getValue() != null) {
+                stage.initOwner(deleteButton.getScene().getWindow());
+                stage.setScene(new Scene((Parent) loader.load()));
+                stage.setTitle("Delete Appointment");
+
+                DeletePageController controller = loader.getController();
+                controller.setStage(stage);
+                controller.setMainController(this);
+                controller.setDeleteID(appointmentID.getValue());
+
+                stage.showAndWait();
+
+                setAppointmentsDetails();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 }

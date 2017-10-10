@@ -4,8 +4,7 @@
 
 package Controller;
 
-import Model.Appointment;
-import Model.Calendar;
+import Model.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -23,7 +22,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
 
-public class EditApptCtrl {
+public class EditPageController {
 
     @FXML
     private Label appointmentIDLabel;
@@ -40,14 +39,13 @@ public class EditApptCtrl {
     @FXML
     private ComboBox<String> repeatComboBox;
     @FXML
-    private Button confirmBtn;
+    private Button confirmButton;
     @FXML
-    private Button cancelBtn;
+    private Button cancelButton;
     @FXML
     private Stage stage;
 
     private int editID;
-    private MainController mainController;
     private Appointment appointment;
 
     private Date date = new Date();
@@ -88,45 +86,21 @@ public class EditApptCtrl {
 
         if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
             try {
-                /** setup */
-                Class.forName("org.sqlite.JDBC");
-                String dbURL = "jdbc:sqlite:Appointments.db";
-                Connection connection = DriverManager.getConnection(dbURL);
-
-                /** query edit appointments */
-                if (connection != null) {
-                    /**
-                     * update appointment on db
-                     */
-                    String query = "update Appointments " +
-                            "set name='" + name +
-                            "', description='" + description +
-                            "', date='" + date +
-                            "', repeat='" + repeat +
-                            "' where id=" + editID;
-                    Statement statement = connection.createStatement();
-                    statement.executeUpdate(query);
-
-                    connection.close();
-                }
                 /**
-                 * edit appointment on mc.calendar
+                 * edit appointment
                  */
                 this.appointment.setName(name);
                 this.appointment.setDescription(description);
                 this.date = dateFormat.parse(date);
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
                 this.appointment.setDate(localDateTime);
-                this.appointment.setRepeat(repeat);
 
-                this.mainController.setAppointmentsDetails();
+                /**
+                 * CANT CHANGE DYNAMIC TYPE; NEED DESIGN PATTERN
+                 */
 
                 this.stage.close();
             } catch (ParseException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
@@ -137,25 +111,29 @@ public class EditApptCtrl {
         this.stage.close();
     }
 
-    public void setEditID(int id) {
-        this.appointment = mainController.getCalendar().getAppointment(id);
+    public void setEditAppointment(Appointment appointment) {
+        this.appointment = appointment;
 
-        this.editID = id;
-        this.appointmentIDLabel.setText(this.appointmentIDLabel.getText()+id);
+        this.editID = appointment.getId();
+
+        this.appointmentIDLabel.setText(this.appointmentIDLabel.getText()+this.editID);
         this.datePicker.setValue(this.appointment.getDate().toLocalDate());
         this.name.setText(this.appointment.getName());
         this.description.setText(this.appointment.getDescription());
         this.hour.setValue(this.appointment.getDate().getHour()+"");
         this.minute.setValue(this.appointment.getDate().getMinute()+"");
-        this.repeatComboBox.setValue(this.appointment.getRepeat());
+        String repeat = "NONE";
+        if (appointment instanceof DailyAppointment)
+            repeat = "DAILY";
+        else if (appointment instanceof WeeklyAppointment)
+            repeat = "WEEKLY";
+        else if (appointment instanceof MonthlyAppointment)
+            repeat = "MONTHLY";
+        this.repeatComboBox.setValue(repeat);
     }
 
     public void setStage(Stage stage) {
         this.stage = stage;
-    }
-
-    public void setMainController(MainController ctrlr) {
-        this.mainController = ctrlr;
     }
 
 }
