@@ -46,15 +46,9 @@ public class SQLiteDataSource implements AppointmentDataSource {
                      */
                     this.date = dateFormat.parse(date);
                     LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-                    Appointment appointment;
-                    if ("DAILY".equalsIgnoreCase(repeat))
-                        appointment = new DailyAppointment(id, name, description, localDateTime);
-                    else if ("WEEKLY".equalsIgnoreCase(repeat))
-                        appointment = new WeeklyAppointment(id, name, description, localDateTime);
-                    else if ("MONTHLY".equalsIgnoreCase(repeat))
-                        appointment = new MonthlyAppointment(id, name, description, localDateTime);
-                    else
-                        appointment = new NormalAppointment(id, name, description, localDateTime);
+
+                    Appointment appointment = new Appointment(id, name, description, localDateTime);
+                    appointment.setRepeatType(repeat);
                     appointments.add(appointment);
                 }
 
@@ -113,19 +107,12 @@ public class SQLiteDataSource implements AppointmentDataSource {
                 /**
                  * add appointment to db
                  */
-                String repeat = "NONE";
-                if (appointment instanceof DailyAppointment)
-                    repeat = "DAILY";
-                else if (appointment instanceof WeeklyAppointment)
-                    repeat = "WEEKLY";
-                else if (appointment instanceof MonthlyAppointment)
-                    repeat = "MONTHLY";
-
                 String query = "insert into Appointments values ("+
                         appointment.getId()+", '"+
                         appointment.getName()+"' , '"+
                         appointment.getDescription()+"' , '"+
-                        appointment.getDateString()+"' , '"+repeat+"')";
+                        appointment.getDateToString()+"' , '"+
+                        appointment.getRepeatType().getRepeat()+"')";
                 Statement statement = connection.createStatement();
                 statement.executeUpdate(query);
 
@@ -151,19 +138,11 @@ public class SQLiteDataSource implements AppointmentDataSource {
                 /**
                  * update appointment on db
                  */
-                String repeat = "NONE";
-                if (appointment instanceof DailyAppointment)
-                    repeat = "DAILY";
-                else if (appointment instanceof WeeklyAppointment)
-                    repeat = "WEEKLY";
-                else if (appointment instanceof MonthlyAppointment)
-                    repeat = "MONTHLY";
-
                 String query = "update Appointments " +
                         "set name='" + appointment.getName() +
                         "', description='" + appointment.getDescription() +
-                        "', date='" + appointment.getDateString() +
-                        "', repeat='" + repeat +
+                        "', date='" + appointment.getDateToString() +
+                        "', repeat='" + appointment.getRepeatType().getRepeat() +
                         "' where id=" + appointment.getId();
                 Statement statement = connection.createStatement();
                 statement.executeUpdate(query);

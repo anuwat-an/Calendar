@@ -14,7 +14,6 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -86,10 +85,9 @@ public class MainController {
         this.repeatComboBox.getItems().add("DAILY");
         this.repeatComboBox.getItems().add("WEEKLY");
         this.repeatComboBox.getItems().add("MONTHLY");
+        this.datePicker.setValue(LocalDate.now());
 
         this.loadCalendar();
-
-        this.datePicker.setValue(LocalDate.now());
         this.setAppointmentsDetails();
 
     }
@@ -182,15 +180,9 @@ public class MainController {
                  */
                 this.date = dateFormat.parse(date);
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-                Appointment appointment;
-                if ("DAILY".equalsIgnoreCase(repeat))
-                    appointment = new DailyAppointment(lastID, name, description, localDateTime);
-                else if ("WEEKLY".equalsIgnoreCase(repeat))
-                    appointment = new WeeklyAppointment(lastID, name, description, localDateTime);
-                else if ("MONTHLY".equalsIgnoreCase(repeat))
-                    appointment = new MonthlyAppointment(lastID, name, description, localDateTime);
-                else
-                    appointment = new NormalAppointment(lastID, name, description, localDateTime);
+
+                Appointment appointment = new Appointment(lastID, name, description, localDateTime);
+                appointment.setRepeatType(repeat);
                 this.calendar.addAppointment(appointment);
 
                 this.dataSource.addData(appointment);
@@ -230,6 +222,7 @@ public class MainController {
                 EditPageController controller = loader.getController();
                 controller.setStage(stage);
                 controller.setEditAppointment(calendar.getAppointment(appointmentID.getValue()));
+                controller.setDataSource(dataSource);
 
                 stage.showAndWait();
 
@@ -253,8 +246,9 @@ public class MainController {
 
                 DeletePageController controller = loader.getController();
                 controller.setStage(stage);
-                controller.setMainController(this);
                 controller.setDeleteID(appointmentID.getValue());
+                controller.setCalendar(calendar);
+                controller.setDataSource(dataSource);
 
                 stage.showAndWait();
 

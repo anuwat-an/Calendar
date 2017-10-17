@@ -4,6 +4,8 @@
 
 package Controller;
 
+import DataSource.AppointmentDataSource;
+import Model.Calendar;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -27,37 +29,16 @@ public class DeletePageController {
     private Stage stage;
 
     private int deleteID;
-    private MainController mainController;
+    private Calendar calendar;
+    private AppointmentDataSource dataSource;
 
     @FXML
     public void confirmDel() {
-        try {
-            /** setup */
-            Class.forName("org.sqlite.JDBC");
-            String dbURL = "jdbc:sqlite:Appointments.db";
-            Connection connection = DriverManager.getConnection(dbURL);
+        this.calendar.deleteAppointment(deleteID);
 
-            /** query delete appointments */
-            if (connection != null) {
-                String query = "delete from Appointments where id="+deleteID;
-                Statement statement = connection.createStatement();
-                statement.executeUpdate(query);
+        this.dataSource.deleteData(deleteID);
 
-                connection.close();
-            }
-
-            /**
-             * #EDIT add and use calendar's method to remove
-             */
-            this.mainController.getCalendar().deleteAppointment(deleteID);
-            this.mainController.setAppointmentsDetails();
-
-            this.stage.close();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        this.stage.close();
     }
 
     @FXML
@@ -74,8 +55,12 @@ public class DeletePageController {
         this.stage = stage;
     }
 
-    public void setMainController(MainController ctrlr) {
-        this.mainController = ctrlr;
+    public void setCalendar(Calendar calendar) {
+        this.calendar = calendar;
+    }
+
+    public void setDataSource(AppointmentDataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
 }

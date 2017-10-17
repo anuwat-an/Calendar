@@ -10,19 +10,13 @@ import java.time.LocalDateTime;
 
 public class Appointment {
 
-    protected int id;
-    protected String name;
-    protected String description;
-    protected LocalDateTime date;
+    private int id;
+    private String name;
+    private String description;
+    private LocalDateTime date;
+    private RepeatType repeatType;
 
-    /**
-     * USE STRETAGY FOR REPEAT TYPE
-     */
 //    private String repeat;
-
-//    public Appointment(int id, String name, String description, LocalDateTime date) {
-//        this(id, name, description, date, "NONE");
-//    }
 
 //    public Appointment(int id, String name, String description, LocalDateTime date, String repeat) {
 //        this.id = id;
@@ -39,14 +33,10 @@ public class Appointment {
         this.date = date;
     }
 
-    public String getDateString() {
-        NumberFormat numberFormat = new DecimalFormat("00");
-        String hour = numberFormat.format(this.date.getHour());
-        String minute = numberFormat.format(this.date.getMinute());
-
-        return date.getDayOfWeek().getValue() + " " +
-                date.getDayOfMonth()+"/"+date.getMonthValue()+"/"+date.getYear()+" "+
-                hour+":"+minute;
+    public String getDateToString() {
+        return this.date.getDayOfWeek() + " " +
+                this.date.getDayOfMonth()+"/"+this.date.getMonthValue()+"/"+this.date.getYear() + " " +
+                this.date.getHour()+":"+this.date.getMinute();
     }
 
     public int getId() {
@@ -67,6 +57,10 @@ public class Appointment {
 //        return repeat;
 //    }
 
+    public RepeatType getRepeatType() {
+        return repeatType;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -82,6 +76,17 @@ public class Appointment {
 //    public void setRepeat(String repeat) {
 //        this.repeat = repeat;
 //    }
+
+    public void setRepeatType(String type) {
+        if ("DAILY".equalsIgnoreCase(type))
+            this.repeatType = new DailyRepeat();
+        else if ("WEEKLY".equalsIgnoreCase(type))
+            this.repeatType = new WeeklyRepeat();
+        else if ("MONTHLY".equalsIgnoreCase(type))
+            this.repeatType = new MonthlyRepeat();
+        else if ("NONE".equalsIgnoreCase(type))
+            this.repeatType = new NoneRepeat();
+    }
 
 //    @Override
 //    public String toString() {
@@ -114,16 +119,5 @@ public class Appointment {
 //                this.name + "\n" +
 //                this.description + "\n";
 //    }
-
-    @Override
-    public String toString() {
-        NumberFormat numberFormat = new DecimalFormat("00");
-        String hour = numberFormat.format(this.date.getHour());
-        String minute = numberFormat.format(this.date.getMinute());
-
-        return hour + ":" + minute + "\n" +
-                name + "\n" +
-                description + "\n";
-    }
 
 }

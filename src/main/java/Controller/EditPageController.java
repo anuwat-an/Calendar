@@ -4,15 +4,12 @@
 
 package Controller;
 
+import DataSource.AppointmentDataSource;
 import Model.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,8 +42,8 @@ public class EditPageController {
     @FXML
     private Stage stage;
 
-    private int editID;
     private Appointment appointment;
+    private AppointmentDataSource dataSource;
 
     private Date date = new Date();
     private DateFormat dateFormat = new SimpleDateFormat("u dd/MM/yyyy HH:mm", Locale.US);
@@ -94,10 +91,9 @@ public class EditPageController {
                 this.date = dateFormat.parse(date);
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
                 this.appointment.setDate(localDateTime);
+                this.appointment.setRepeatType(repeat);
 
-                /**
-                 * CANT CHANGE DYNAMIC TYPE; NEED DESIGN PATTERN
-                 */
+                this.dataSource.updateData(appointment);
 
                 this.stage.close();
             } catch (ParseException e) {
@@ -113,27 +109,20 @@ public class EditPageController {
 
     public void setEditAppointment(Appointment appointment) {
         this.appointment = appointment;
-
-        this.editID = appointment.getId();
-
-        this.appointmentIDLabel.setText(this.appointmentIDLabel.getText()+this.editID);
-        this.datePicker.setValue(this.appointment.getDate().toLocalDate());
-        this.name.setText(this.appointment.getName());
-        this.description.setText(this.appointment.getDescription());
-        this.hour.setValue(this.appointment.getDate().getHour()+"");
-        this.minute.setValue(this.appointment.getDate().getMinute()+"");
-        String repeat = "NONE";
-        if (appointment instanceof DailyAppointment)
-            repeat = "DAILY";
-        else if (appointment instanceof WeeklyAppointment)
-            repeat = "WEEKLY";
-        else if (appointment instanceof MonthlyAppointment)
-            repeat = "MONTHLY";
-        this.repeatComboBox.setValue(repeat);
+        this.datePicker.setValue(appointment.getDate().toLocalDate());
+        this.name.setText(appointment.getName());
+        this.description.setText(appointment.getDescription());
+        this.hour.setValue(appointment.getDate().getHour()+"");
+        this.minute.setValue(appointment.getDate().getMinute()+"");
+        this.repeatComboBox.setValue(appointment.getRepeatType().getRepeat());
     }
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    public void setDataSource(AppointmentDataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
 }
