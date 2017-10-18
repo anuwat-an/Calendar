@@ -6,6 +6,7 @@ package Controller;
 
 import DataSource.AppointmentDataSource;
 import Model.*;
+import Model.Calendar;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,11 +20,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Locale;
+import java.util.*;
 
 public class MainController {
 
@@ -105,44 +104,11 @@ public class MainController {
         this.appointmentID.getItems().clear();
         this.appointmentDetails.clear();
 
-        ArrayList<Appointment> selectedAppts = new ArrayList<>();
-        for (Appointment appt : this.calendar.getAppointments()) {
-            if (appt.getDate().toLocalDate().equals(this.datePicker.getValue()) || "DAILY".equalsIgnoreCase(appt.getRepeat())) {
-                selectedAppts.add(appt);
-            }
-            else if ("WEEKLY".equalsIgnoreCase(appt.getRepeat()) &&
-                    this.datePicker.getValue().getDayOfWeek().getValue() == appt.getDate().getDayOfWeek().getValue()) {
-                selectedAppts.add(appt);
-            }
-            else if ("MONTHLY".equalsIgnoreCase(appt.getRepeat()) &&
-                    this.datePicker.getValue().getDayOfMonth() == appt.getDate().getDayOfMonth()) {
-                selectedAppts.add(appt);
-            }
+        PriorityQueue<Appointment> selectedAppts = new PriorityQueue<>();
+        for (Appointment appointment : calendar.getAppointments()) {
+            if (appointment.getRepeatType().compareDate(LocalDateTime.of(datePicker.getValue(), LocalTime.of(Integer.parseInt(hour.getValue()), Integer.parseInt(minute.getValue())))))
+                selectedAppts.add(appointment);
         }
-        selectedAppts.sort(new Comparator<Appointment>() {
-            @Override
-            public int compare(Appointment o1, Appointment o2) {
-                if ("MONTHLY".equalsIgnoreCase(o1.getRepeat()) && "MONTHLY".equalsIgnoreCase(o2.getRepeat()))
-                    return o1.getDate().compareTo(o2.getDate());
-                else if ("MONTHLY".equalsIgnoreCase(o1.getRepeat()))
-                    return 1;
-                else if ("MONTHLY".equalsIgnoreCase(o2.getRepeat()))
-                    return -1;
-                else if ("WEEKLY".equalsIgnoreCase(o1.getRepeat()) && "WEEKLY".equalsIgnoreCase(o2.getRepeat()))
-                    return o1.getDate().compareTo(o2.getDate());
-                else if ("WEEKLY".equalsIgnoreCase(o1.getRepeat()))
-                    return 1;
-                else if ("WEEKLY".equalsIgnoreCase(o2.getRepeat()))
-                    return -1;
-                else if ("DAILY".equalsIgnoreCase(o1.getRepeat()) && "DAILY".equalsIgnoreCase(o2.getRepeat()))
-                    return o1.getDate().compareTo(o2.getDate());
-                else if ("DAILY".equalsIgnoreCase(o1.getRepeat()))
-                    return 1;
-                else if ("DAILY".equalsIgnoreCase(o2.getRepeat()))
-                    return -1;
-                return o1.getDate().compareTo(o2.getDate());
-            }
-        });
 
         for (Appointment apt : selectedAppts) {
             int aptID = apt.getId();
@@ -193,6 +159,7 @@ public class MainController {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
+
         }
     }
 
@@ -203,9 +170,6 @@ public class MainController {
         this.hour.setValue(null);
         this.minute.setValue(null);
         this.repeatComboBox.setValue(null);
-//        this.hour.setPromptText("Hr");
-//        this.minute.setPromptText("Min");
-//        this.repeatComboBox.setPromptText("Repeat Option");
     }
 
     @FXML

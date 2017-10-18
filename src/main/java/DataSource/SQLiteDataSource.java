@@ -1,3 +1,7 @@
+/**
+ * Anuwat Angkuldee 5810401066
+ */
+
 package DataSource;
 
 import Model.*;
@@ -111,7 +115,7 @@ public class SQLiteDataSource implements AppointmentDataSource {
                         appointment.getId()+", '"+
                         appointment.getName()+"' , '"+
                         appointment.getDescription()+"' , '"+
-                        appointment.getDateToString()+"' , '"+
+                        appointment.getDateTimeToString()+"' , '"+
                         appointment.getRepeatType().getRepeat()+"')";
                 Statement statement = connection.createStatement();
                 statement.executeUpdate(query);
@@ -141,7 +145,7 @@ public class SQLiteDataSource implements AppointmentDataSource {
                 String query = "update Appointments " +
                         "set name='" + appointment.getName() +
                         "', description='" + appointment.getDescription() +
-                        "', date='" + appointment.getDateToString() +
+                        "', date='" + appointment.getDateTimeToString() +
                         "', repeat='" + appointment.getRepeatType().getRepeat() +
                         "' where id=" + appointment.getId();
                 Statement statement = connection.createStatement();

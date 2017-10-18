@@ -11,12 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 public class DeletePageController {
 
     @FXML
@@ -33,7 +27,7 @@ public class DeletePageController {
     private AppointmentDataSource dataSource;
 
     @FXML
-    public void confirmDel() {
+    public void confirmDelete() {
         this.calendar.deleteAppointment(deleteID);
 
         this.dataSource.deleteData(deleteID);
@@ -42,7 +36,7 @@ public class DeletePageController {
     }
 
     @FXML
-    public void cancelDel() {
+    public void cancelDelete() {
         this.stage.close();
     }
 

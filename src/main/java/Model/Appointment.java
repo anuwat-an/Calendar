@@ -33,10 +33,20 @@ public class Appointment {
         this.date = date;
     }
 
+    public String getDateTimeToString() {
+        return getDateToString() + " " + getTimeToString();
+    }
+
     public String getDateToString() {
         return this.date.getDayOfWeek() + " " +
-                this.date.getDayOfMonth()+"/"+this.date.getMonthValue()+"/"+this.date.getYear() + " " +
-                this.date.getHour()+":"+this.date.getMinute();
+                this.date.getDayOfMonth()+"/"+this.date.getMonthValue()+"/"+this.date.getYear();
+    }
+
+    public String getTimeToString() {
+        NumberFormat numberFormat = new DecimalFormat("00");
+        String hour = numberFormat.format(this.date.getHour());
+        String minute = numberFormat.format(this.date.getMinute());
+        return hour+":"+minute;
     }
 
     public int getId() {
@@ -79,13 +89,13 @@ public class Appointment {
 
     public void setRepeatType(String type) {
         if ("DAILY".equalsIgnoreCase(type))
-            this.repeatType = new DailyRepeat();
+            this.repeatType = new DailyRepeat(this);
         else if ("WEEKLY".equalsIgnoreCase(type))
-            this.repeatType = new WeeklyRepeat();
+            this.repeatType = new WeeklyRepeat(this);
         else if ("MONTHLY".equalsIgnoreCase(type))
-            this.repeatType = new MonthlyRepeat();
+            this.repeatType = new MonthlyRepeat(this);
         else if ("NONE".equalsIgnoreCase(type))
-            this.repeatType = new NoneRepeat();
+            this.repeatType = new NoneRepeat(this);
     }
 
 //    @Override

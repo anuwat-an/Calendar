@@ -1,6 +1,16 @@
+/**
+ * Anuwat Angkuldee 5810401066
+ */
+
 package Model;
 
-public class NoneRepeat implements RepeatType, Comparable<RepeatType> {
+import java.time.LocalDateTime;
+
+public class NoneRepeat extends RepeatType {
+
+    public NoneRepeat(Appointment appointment) {
+        super(appointment);
+    }
 
     @Override
     public String getRepeat() {
@@ -8,12 +18,19 @@ public class NoneRepeat implements RepeatType, Comparable<RepeatType> {
     }
 
     @Override
-    public int compareTo(RepeatType o) {
-        return 0;
+    public String toString() {
+        return appointment.getId() + ": " + appointment.getDateToString() + " " + super.toString();
     }
 
     @Override
-    public String toString() {
-        return null;
+    public boolean compareDate(LocalDateTime date) {
+        return appointment.getDate().compareTo(date) == 0;
+    }
+
+    @Override
+    public int compareTo(RepeatType o) {
+        if (o instanceof DailyRepeat || o instanceof WeeklyRepeat || o instanceof MonthlyRepeat)
+            return -1;
+        return appointment.getDate().compareTo(o.getAppointment().getDate());
     }
 }
