@@ -46,7 +46,7 @@ public class EditPageController {
     private AppointmentDataSource dataSource;
 
     private Date date = new Date();
-    private DateFormat dateFormat = new SimpleDateFormat("u dd/MM/yyyy HH:mm", Locale.US);
+    private DateFormat dateFormat = new SimpleDateFormat("E dd/MM/yyyy HH:mm", Locale.US);
 
     @FXML
     public void initialize() {
@@ -77,7 +77,7 @@ public class EditPageController {
         String hour = this.hour.getValue();
         String minute = this.minute.getValue();
         String repeat = this.repeatComboBox.getValue();
-        String date = localDate.getDayOfWeek().getValue() + " " +
+        String date = localDate.getDayOfWeek() + " " +
                 localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
                 hour+":"+minute;
 

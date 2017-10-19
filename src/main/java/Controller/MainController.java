@@ -5,6 +5,7 @@
 package Controller;
 
 import DataSource.AppointmentDataSource;
+import DataSource.SQLiteDataSource;
 import Model.*;
 import Model.Calendar;
 import javafx.fxml.FXML;
@@ -62,7 +63,7 @@ public class MainController {
     private int lastID;
 
     private java.util.Date date = new Date();
-    private DateFormat dateFormat = new SimpleDateFormat("u dd/MM/yyyy HH:mm", Locale.US);
+    private DateFormat dateFormat = new SimpleDateFormat("E dd/MM/yyyy HH:mm", Locale.US);
 
     @FXML
     public void initialize() {
@@ -86,6 +87,8 @@ public class MainController {
         this.repeatComboBox.getItems().add("MONTHLY");
         this.datePicker.setValue(LocalDate.now());
 
+        this.dataSource = new SQLiteDataSource();
+
         this.loadCalendar();
         this.setAppointmentsDetails();
 
@@ -96,7 +99,7 @@ public class MainController {
         this.calendar = new Calendar();
         this.calendar.setAppointments(dataSource.loadData());
 
-        this.lastID = dataSource.getLastID();
+        this.lastID = dataSource.getLastID()+1;
     }
 
     @FXML
@@ -106,15 +109,15 @@ public class MainController {
 
         PriorityQueue<Appointment> selectedAppts = new PriorityQueue<>();
         for (Appointment appointment : calendar.getAppointments()) {
-            if (appointment.getRepeatType().compareDate(LocalDateTime.of(datePicker.getValue(), LocalTime.of(Integer.parseInt(hour.getValue()), Integer.parseInt(minute.getValue())))))
+            if (appointment.getRepeatType().compareDate(datePicker.getValue()))
                 selectedAppts.add(appointment);
         }
 
-        for (Appointment apt : selectedAppts) {
-            int aptID = apt.getId();
+        for (Appointment appointment : selectedAppts) {
+            int appointmentID = appointment.getId();
 
-            this.appointmentID.getItems().add(aptID);
-            this.appointmentDetails.appendText(apt.toString() + "\n");
+            this.appointmentID.getItems().add(appointmentID);
+            this.appointmentDetails.appendText(appointment.toString() + "\n");
 
         }
 
@@ -133,7 +136,7 @@ public class MainController {
         String hour = this.hour.getValue();
         String minute = this.minute.getValue();
         String repeat = this.repeatComboBox.getValue();
-        String date = localDate.getDayOfWeek().getValue() + " " +
+        String date = localDate.getDayOfWeek() + " " +
                 localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
                 hour+":"+minute;
 
@@ -182,6 +185,7 @@ public class MainController {
                 stage.initOwner(editButton.getScene().getWindow());
                 stage.setScene(new Scene((Parent) loader.load()));
                 stage.setTitle("Edit Appointment");
+                stage.setResizable(false);
 
                 EditPageController controller = loader.getController();
                 controller.setStage(stage);
@@ -207,6 +211,7 @@ public class MainController {
                 stage.initOwner(deleteButton.getScene().getWindow());
                 stage.setScene(new Scene((Parent) loader.load()));
                 stage.setTitle("Delete Appointment");
+                stage.setResizable(false);
 
                 DeletePageController controller = loader.getController();
                 controller.setStage(stage);
@@ -223,4 +228,7 @@ public class MainController {
         }
     }
 
+    public void setDataSource(AppointmentDataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 }

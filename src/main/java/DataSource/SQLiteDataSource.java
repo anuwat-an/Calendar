@@ -19,7 +19,7 @@ import java.util.Locale;
 public class SQLiteDataSource implements AppointmentDataSource {
 
     private java.util.Date date = new Date();
-    private DateFormat dateFormat = new SimpleDateFormat("u dd/MM/yyyy HH:mm", Locale.US);
+    private DateFormat dateFormat = new SimpleDateFormat("E dd/MM/yyyy HH:mm", Locale.US);
 
     @Override
     public ArrayList<Appointment> loadData() {
@@ -85,7 +85,7 @@ public class SQLiteDataSource implements AppointmentDataSource {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query);
 
-                lastID = resultSet.getInt(0);
+                lastID = resultSet.getInt(1);
 
                 connection.close();
             }

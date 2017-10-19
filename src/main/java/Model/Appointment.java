@@ -8,7 +8,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 
-public class Appointment {
+public class Appointment implements Comparable<Appointment> {
 
     private int id;
     private String name;
@@ -98,7 +98,18 @@ public class Appointment {
             this.repeatType = new NoneRepeat(this);
     }
 
-//    @Override
+    /** fix coupling later */
+    @Override
+    public int compareTo(Appointment o) {
+        return this.repeatType.compareTo(o.getRepeatType());
+    }
+
+    @Override
+    public String toString() {
+        return this.repeatType.toString();
+    }
+
+    //    @Override
 //    public String toString() {
 //        NumberFormat numberFormat = new DecimalFormat("00");
 //        String hour = numberFormat.format(this.date.getHour());

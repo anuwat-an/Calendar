@@ -4,9 +4,9 @@
 
 package Model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
-public abstract class RepeatType implements Comparable<RepeatType> {
+public abstract class RepeatType {
 
     protected Appointment appointment;
 
@@ -26,6 +26,7 @@ public abstract class RepeatType implements Comparable<RepeatType> {
     }
 
     public abstract String getRepeat();
-    public abstract boolean compareDate(LocalDateTime date);
+    public abstract boolean compareDate(LocalDate date);
+    public abstract int compareTo(RepeatType o);
 
 }

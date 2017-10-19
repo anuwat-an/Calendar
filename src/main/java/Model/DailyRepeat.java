@@ -4,7 +4,7 @@
 
 package Model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class DailyRepeat extends RepeatType {
 
@@ -23,16 +23,17 @@ public class DailyRepeat extends RepeatType {
     }
 
     @Override
-    public boolean compareDate(LocalDateTime date) {
+    public boolean compareDate(LocalDate date) {
         return true;
     }
 
+    /** fix bug & OCP */
     @Override
     public int compareTo(RepeatType o) {
         if (o instanceof NoneRepeat)
             return 1;
         else if (o instanceof WeeklyRepeat || o instanceof MonthlyRepeat)
             return -1;
-        return appointment.getDate().toLocalTime().compareTo(o.getAppointment().getDate().toLocalTime());
+        return 0;//appointment.getDate().toLocalTime().compareTo(o.getAppointment().getDate().toLocalTime());
     }
 }
