@@ -2,13 +2,13 @@
  * Anuwat Angkuldee 5810401066
  */
 
-package DataSource;
+package dataSource;
 
-import Model.Appointment;
+import model.Appointment;
 
 import java.util.ArrayList;
 
-public class FileSystemDataSource implements AppointmentDataSource {
+public class FileSystemSource extends DataSource {
     @Override
     public ArrayList<Appointment> loadData() {
         return null;

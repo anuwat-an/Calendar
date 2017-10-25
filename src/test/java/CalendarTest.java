@@ -1,5 +1,3 @@
-import Controller.MainController;
-import Model.Calendar;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -8,9 +6,6 @@ import org.junit.jupiter.api.Test;
  */
 
 public class CalendarTest {
-
-    private Calendar calendar;
-    private MainController mainController;
 
     @BeforeAll
     public void setUp() {

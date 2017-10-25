@@ -2,9 +2,9 @@
  * Anuwat Angkuldee 5810401066
  */
 
-package DataSource;
+package dataSource;
 
-import Model.*;
+import model.*;
 
 import java.sql.*;
 import java.text.DateFormat;
@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-public class SQLiteDataSource implements AppointmentDataSource {
+public class SQLiteSource extends DataSource {
 
-    private java.util.Date date = new Date();
+    private Date date = new Date();
     private DateFormat dateFormat = new SimpleDateFormat("E dd/MM/yyyy HH:mm", Locale.US);
 
     @Override
@@ -43,6 +43,7 @@ public class SQLiteDataSource implements AppointmentDataSource {
                     String description = resultSet.getString("description");
                     String date = resultSet.getString("date");
                     String repeat = resultSet.getString("repeat");
+                    RepeatType repeatType = repeatTypeMap.get(repeat);
 
                     /**
                      * create LocalDateTime to add to appointment
@@ -51,8 +52,7 @@ public class SQLiteDataSource implements AppointmentDataSource {
                     this.date = dateFormat.parse(date);
                     LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
 
-                    Appointment appointment = new Appointment(id, name, description, localDateTime);
-                    appointment.setRepeatType(repeat);
+                    Appointment appointment = new Appointment(id, name, description, localDateTime, repeatType);
                     appointments.add(appointment);
                 }
 

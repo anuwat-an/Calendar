@@ -2,12 +2,11 @@
  * Anuwat Angkuldee 5810401066
  */
 
-package Controller;
+package controller;
 
-import DataSource.AppointmentDataSource;
-import DataSource.SQLiteDataSource;
-import Model.*;
-import Model.Calendar;
+import dataSource.DataSource;
+import model.*;
+import model.Calendar;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,11 +20,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 
-public class MainController {
+public class MainControllerGUI {
 
     /** Column 1 */
     @FXML
@@ -58,12 +56,22 @@ public class MainController {
     private Button resetButton;
 
     private Calendar calendar;
-    private AppointmentDataSource dataSource;
+    private DataSource dataSource;
+
+    private Map<String, RepeatType> repeatTypeMap;
 
     private int lastID;
 
-    private java.util.Date date = new Date();
+    private Date date = new Date();
     private DateFormat dateFormat = new SimpleDateFormat("E dd/MM/yyyy HH:mm", Locale.US);
+
+    public MainControllerGUI() {
+        repeatTypeMap = new HashMap<>();
+        repeatTypeMap.put("NONE", new NoneRepeat());
+        repeatTypeMap.put("DAILY", new DailyRepeat());
+        repeatTypeMap.put("WEEKLY", new WeeklyRepeat());
+        repeatTypeMap.put("MONTHLY", new MonthlyRepeat());
+    }
 
     @FXML
     public void initialize() {
@@ -87,14 +95,13 @@ public class MainController {
         this.repeatComboBox.getItems().add("MONTHLY");
         this.datePicker.setValue(LocalDate.now());
 
-        this.dataSource = new SQLiteDataSource();
-
-        this.loadCalendar();
-        this.setAppointmentsDetails();
-
     }
 
-    @FXML
+    public void prepareCalendar() {
+        this.loadCalendar();
+        this.setAppointmentsDetails();
+    }
+
     private void loadCalendar() {
         this.calendar = new Calendar();
         this.calendar.setAppointments(dataSource.loadData());
@@ -102,23 +109,25 @@ public class MainController {
         this.lastID = dataSource.getLastID()+1;
     }
 
-    @FXML
     public void setAppointmentsDetails() {
         this.appointmentID.getItems().clear();
         this.appointmentDetails.clear();
 
-        PriorityQueue<Appointment> selectedAppts = new PriorityQueue<>();
+        ArrayList<Appointment> selectedAppts = new ArrayList<>();
         for (Appointment appointment : calendar.getAppointments()) {
-            if (appointment.getRepeatType().compareDate(datePicker.getValue()))
+            if (appointment.compareDate(datePicker.getValue()))
                 selectedAppts.add(appointment);
         }
 
+        selectedAppts.sort(new Comparator<Appointment>() {
+            @Override
+            public int compare(Appointment o1, Appointment o2) {
+                return o1.getDate().toLocalTime().compareTo(o2.getDate().toLocalTime());
+            }
+        });
         for (Appointment appointment : selectedAppts) {
-            int appointmentID = appointment.getId();
-
-            this.appointmentID.getItems().add(appointmentID);
+            this.appointmentID.getItems().add(appointment.getId());
             this.appointmentDetails.appendText(appointment.toString() + "\n");
-
         }
 
         int length = this.appointmentDetails.getText().length();
@@ -136,6 +145,7 @@ public class MainController {
         String hour = this.hour.getValue();
         String minute = this.minute.getValue();
         String repeat = this.repeatComboBox.getValue();
+        RepeatType repeatType = this.repeatTypeMap.get(repeat);
         String date = localDate.getDayOfWeek() + " " +
                 localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
                 hour+":"+minute;
@@ -150,8 +160,7 @@ public class MainController {
                 this.date = dateFormat.parse(date);
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
 
-                Appointment appointment = new Appointment(lastID, name, description, localDateTime);
-                appointment.setRepeatType(repeat);
+                Appointment appointment = new Appointment(lastID, name, description, localDateTime, repeatType);
                 this.calendar.addAppointment(appointment);
 
                 this.dataSource.addData(appointment);
@@ -187,7 +196,7 @@ public class MainController {
                 stage.setTitle("Edit Appointment");
                 stage.setResizable(false);
 
-                EditPageController controller = loader.getController();
+                EditPageControllerGUI controller = loader.getController();
                 controller.setStage(stage);
                 controller.setEditAppointment(calendar.getAppointment(appointmentID.getValue()));
                 controller.setDataSource(dataSource);
@@ -213,7 +222,7 @@ public class MainController {
                 stage.setTitle("Delete Appointment");
                 stage.setResizable(false);
 
-                DeletePageController controller = loader.getController();
+                DeletePageControllerGUI controller = loader.getController();
                 controller.setStage(stage);
                 controller.setDeleteID(appointmentID.getValue());
                 controller.setCalendar(calendar);
@@ -228,7 +237,7 @@ public class MainController {
         }
     }
 
-    public void setDataSource(AppointmentDataSource dataSource) {
+    public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 }

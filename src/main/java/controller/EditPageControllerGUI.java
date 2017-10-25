@@ -2,10 +2,10 @@
  * Anuwat Angkuldee 5810401066
  */
 
-package Controller;
+package controller;
 
-import DataSource.AppointmentDataSource;
-import Model.*;
+import dataSource.DataSource;
+import model.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -17,9 +17,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
-public class EditPageController {
+public class EditPageControllerGUI {
 
     @FXML
     private Label appointmentIDLabel;
@@ -43,10 +45,20 @@ public class EditPageController {
     private Stage stage;
 
     private Appointment appointment;
-    private AppointmentDataSource dataSource;
+    private DataSource dataSource;
+
+    private Map<String, RepeatType> repeatTypeMap;
 
     private Date date = new Date();
     private DateFormat dateFormat = new SimpleDateFormat("E dd/MM/yyyy HH:mm", Locale.US);
+
+    public EditPageControllerGUI() {
+        repeatTypeMap = new HashMap<>();
+        repeatTypeMap.put("NONE", new NoneRepeat());
+        repeatTypeMap.put("DAILY", new DailyRepeat());
+        repeatTypeMap.put("WEEKLY", new WeeklyRepeat());
+        repeatTypeMap.put("MONTHLY", new MonthlyRepeat());
+    }
 
     @FXML
     public void initialize() {
@@ -77,6 +89,7 @@ public class EditPageController {
         String hour = this.hour.getValue();
         String minute = this.minute.getValue();
         String repeat = this.repeatComboBox.getValue();
+        RepeatType repeatType = this.repeatTypeMap.get(repeat);
         String date = localDate.getDayOfWeek() + " " +
                 localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
                 hour+":"+minute;
@@ -91,7 +104,7 @@ public class EditPageController {
                 this.date = dateFormat.parse(date);
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
                 this.appointment.setDate(localDateTime);
-                this.appointment.setRepeatType(repeat);
+                this.appointment.setRepeatType(repeatType);
 
                 this.dataSource.updateData(appointment);
 
@@ -121,7 +134,7 @@ public class EditPageController {
         this.stage = stage;
     }
 
-    public void setDataSource(AppointmentDataSource dataSource) {
+    public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 

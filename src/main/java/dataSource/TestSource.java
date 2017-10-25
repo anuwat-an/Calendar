@@ -1,26 +1,34 @@
-package DataSource;
+/**
+ * Anuwat Angkuldee 5810401066
+ */
 
-import Model.Appointment;
+package dataSource;
+
+import model.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-public class TestDataSource implements AppointmentDataSource {
+public class TestSource extends DataSource {
 
-    ArrayList<Appointment> appointments = new ArrayList<>();
+    private ArrayList<Appointment> appointments;
+
+    public TestSource() {
+        appointments = new ArrayList<>();
+        appointments.add(new Appointment(1, "test1", "test datasource", LocalDateTime.now(), new NoneRepeat()));
+        appointments.add(new Appointment(2, "test2", "test datasource", LocalDateTime.now(), new DailyRepeat()));
+        appointments.add(new Appointment(3, "test3", "test datasource", LocalDateTime.now(), new WeeklyRepeat()));
+        appointments.add(new Appointment(4, "test4", "test datasource", LocalDateTime.now(), new MonthlyRepeat()));
+    }
 
     @Override
     public ArrayList<Appointment> loadData() {
-        appointments.add(new Appointment(0, "test0", "test datasource", LocalDateTime.now()));
-        appointments.add(new Appointment(1, "test1", "test datasource", LocalDateTime.now()));
-        appointments.add(new Appointment(2, "test2", "test datasource", LocalDateTime.now()));
-        appointments.add(new Appointment(3, "test3", "test datasource", LocalDateTime.now()));
         return appointments;
     }
 
     @Override
     public int getLastID() {
-        return 3;
+        return appointments.size();
     }
 
     @Override
@@ -33,10 +41,10 @@ public class TestDataSource implements AppointmentDataSource {
         for (int i = 0; i < appointments.size(); i++) {
             if (appointments.get(i).getId() == appointment.getId()) {
                 appointments.remove(i);
+                appointments.add(i, appointment);
                 break;
             }
         }
-        appointments.add(appointment);
     }
 
     @Override

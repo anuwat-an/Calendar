@@ -2,17 +2,13 @@
  * Anuwat Angkuldee 5810401066
  */
 
-package Model;
+package model;
 
 import java.util.ArrayList;
 
 public class Calendar {
 
     private ArrayList<Appointment> appointments = new ArrayList<>();
-
-//    public void addAppointment(int id, String name, String description, LocalDateTime date, String repeat) {
-//        this.appointments.add(new Appointment(id, name, description, date, repeat));
-//    }
 
     public void addAppointment(Appointment appointment) {
         this.appointments.add(appointment);

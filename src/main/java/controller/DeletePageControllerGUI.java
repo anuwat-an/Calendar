@@ -2,16 +2,16 @@
  * Anuwat Angkuldee 5810401066
  */
 
-package Controller;
+package controller;
 
-import DataSource.AppointmentDataSource;
-import Model.Calendar;
+import dataSource.DataSource;
+import model.Calendar;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
-public class DeletePageController {
+public class DeletePageControllerGUI {
 
     @FXML
     private Label textLabel;
@@ -24,14 +24,12 @@ public class DeletePageController {
 
     private int deleteID;
     private Calendar calendar;
-    private AppointmentDataSource dataSource;
+    private DataSource dataSource;
 
     @FXML
     public void confirmDelete() {
         this.calendar.deleteAppointment(deleteID);
-
         this.dataSource.deleteData(deleteID);
-
         this.stage.close();
     }
 
@@ -53,7 +51,7 @@ public class DeletePageController {
         this.calendar = calendar;
     }
 
-    public void setDataSource(AppointmentDataSource dataSource) {
+    public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
