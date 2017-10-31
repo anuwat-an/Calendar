@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="calendar" class="server.controller.CalendarServiceImp">
+        <constructor-arg ref="sqliteSource"/>
+    </bean>
+
+    <bean id="sqliteSource" class="server.dataSource.SQLiteSource"/>
+
+    <bean class="org.springframework.remoting.rmi.RmiServiceExporter">
+        <property name="service" ref="calendar"/>
+        <property name="serviceName" value="CalendarService"/>
+        <property name="serviceInterface" value="common.CalendarService"/>
+        <property name="registryPort" value="1099"/>
+    </bean>
+
+</beans>
+

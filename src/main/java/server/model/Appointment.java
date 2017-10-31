@@ -1,13 +1,13 @@
-/**
- * Anuwat Angkuldee 5810401066
- */
-
-package model;
+package server.model;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+/**
+ * Anuwat Angkuldee 5810401066
+ */
 
 public class Appointment {
 

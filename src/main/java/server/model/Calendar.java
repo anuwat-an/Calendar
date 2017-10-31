@@ -1,14 +1,14 @@
+package server.model;
+
+import java.util.Vector;
+
 /**
  * Anuwat Angkuldee 5810401066
  */
 
-package model;
-
-import java.util.ArrayList;
-
 public class Calendar {
 
-    private ArrayList<Appointment> appointments = new ArrayList<>();
+    private Vector<Appointment> appointments = new Vector<>();
 
     public void addAppointment(Appointment appointment) {
         this.appointments.add(appointment);
@@ -26,11 +26,11 @@ public class Calendar {
         this.appointments.remove(getAppointment(id));
     }
 
-    public ArrayList<Appointment> getAppointments() {
+    public Vector<Appointment> getAppointments() {
         return appointments;
     }
 
-    public void setAppointments(ArrayList<Appointment> appointments) {
+    public void setAppointments(Vector<Appointment> appointments) {
         this.appointments = appointments;
     }
 

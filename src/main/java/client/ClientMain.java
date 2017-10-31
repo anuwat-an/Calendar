@@ -1,9 +1,8 @@
-/**
- * Anuwat Angkuldee 5810401066
- */
+package client;
 
-import controller.MainControllerGUI;
-import dataSource.DataSource;
+import client.controller.MainControllerGUI;
+import common.CalendarService;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,7 +11,11 @@ import javafx.stage.Stage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class Main extends Application {
+/**
+ * Anuwat Angkuldee 5810401066
+ */
+
+public class ClientMain extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -21,12 +24,12 @@ public class Main extends Application {
         primaryStage.setTitle("Calendar");
         primaryStage.setResizable(false);
 
-        ApplicationContext buffer = new ClassPathXmlApplicationContext("main.xml");
-        DataSource dataSource = (DataSource) buffer.getBean("dataSource");
+        ApplicationContext buffer = new ClassPathXmlApplicationContext("calendar-client.xml");
+        CalendarService service = (CalendarService) buffer.getBean("service");
 
         MainControllerGUI mainControllerGUI = root.getController();
-        mainControllerGUI.setDataSource(dataSource);
-        mainControllerGUI.prepareCalendar();
+        mainControllerGUI.setService(service);
+        mainControllerGUI.setAppointmentsDetails();
 
         primaryStage.show();
     }

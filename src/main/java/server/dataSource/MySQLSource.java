@@ -1,16 +1,16 @@
+package server.dataSource;
+
+import server.model.Appointment;
+
+import java.util.Vector;
+
 /**
  * Anuwat Angkuldee 5810401066
  */
 
-package dataSource;
-
-import model.Appointment;
-
-import java.util.ArrayList;
-
-public class MySQLSource extends DataSource {
+public class MySQLSource implements DataSource {
     @Override
-    public ArrayList<Appointment> loadData() {
+    public Vector<Appointment> loadData() {
         return null;
     }
 

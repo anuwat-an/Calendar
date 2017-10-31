@@ -1,10 +1,10 @@
+package server.model;
+
+import java.time.LocalDate;
+
 /**
  * Anuwat Angkuldee 5810401066
  */
-
-package model;
-
-import java.time.LocalDate;
 
 public class MonthlyRepeat extends RepeatType {
 

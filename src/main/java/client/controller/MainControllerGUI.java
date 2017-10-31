@@ -1,27 +1,21 @@
-/**
- * Anuwat Angkuldee 5810401066
- */
+package client.controller;
 
-package controller;
+import common.CalendarService;
 
-import dataSource.DataSource;
-import model.*;
-import model.Calendar;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+
+/**
+ * Anuwat Angkuldee 5810401066
+ */
 
 public class MainControllerGUI {
 
@@ -55,23 +49,7 @@ public class MainControllerGUI {
     @FXML
     private Button resetButton;
 
-    private Calendar calendar;
-    private DataSource dataSource;
-
-    private Map<String, RepeatType> repeatTypeMap;
-
-    private int lastID;
-
-    private Date date = new Date();
-    private DateFormat dateFormat = new SimpleDateFormat("E dd/MM/yyyy HH:mm", Locale.US);
-
-    public MainControllerGUI() {
-        repeatTypeMap = new HashMap<>();
-        repeatTypeMap.put("NONE", new NoneRepeat());
-        repeatTypeMap.put("DAILY", new DailyRepeat());
-        repeatTypeMap.put("WEEKLY", new WeeklyRepeat());
-        repeatTypeMap.put("MONTHLY", new MonthlyRepeat());
-    }
+    private CalendarService service;
 
     @FXML
     public void initialize() {
@@ -97,43 +75,14 @@ public class MainControllerGUI {
 
     }
 
-    public void prepareCalendar() {
-        this.loadCalendar();
-        this.setAppointmentsDetails();
-    }
-
-    private void loadCalendar() {
-        this.calendar = new Calendar();
-        this.calendar.setAppointments(dataSource.loadData());
-
-        this.lastID = dataSource.getLastID()+1;
-    }
-
     public void setAppointmentsDetails() {
         this.appointmentID.getItems().clear();
         this.appointmentDetails.clear();
 
-        ArrayList<Appointment> selectedAppts = new ArrayList<>();
-        for (Appointment appointment : calendar.getAppointments()) {
-            if (appointment.compareDate(datePicker.getValue()))
-                selectedAppts.add(appointment);
-        }
+        this.appointmentID.getItems().addAll(service.getAppointmentIDs(datePicker.getValue()));
+        this.appointmentDetails.setText(service.getAppointmentDetails(datePicker.getValue()));
 
-        selectedAppts.sort(new Comparator<Appointment>() {
-            @Override
-            public int compare(Appointment o1, Appointment o2) {
-                return o1.getDate().toLocalTime().compareTo(o2.getDate().toLocalTime());
-            }
-        });
-        for (Appointment appointment : selectedAppts) {
-            this.appointmentID.getItems().add(appointment.getId());
-            this.appointmentDetails.appendText(appointment.toString() + "\n");
-        }
-
-        int length = this.appointmentDetails.getText().length();
-        if (length > 0)
-            this.appointmentDetails.deleteText(length-1, length);
-        else
+        if (this.appointmentID.getItems().size() == 0)
             this.appointmentDetails.appendText("There is no appointment on this day.");
     }
 
@@ -145,33 +94,17 @@ public class MainControllerGUI {
         String hour = this.hour.getValue();
         String minute = this.minute.getValue();
         String repeat = this.repeatComboBox.getValue();
-        RepeatType repeatType = this.repeatTypeMap.get(repeat);
         String date = localDate.getDayOfWeek() + " " +
                 localDate.getDayOfMonth()+"/"+localDate.getMonthValue()+"/"+localDate.getYear()+" "+
                 hour+":"+minute;
 
-        if (localDate != null && !"".equals(name) && hour != null && minute != null && repeat != null) {
-
-            try {
-                /**
-                 * create LocalDateTime to add to appointment
-                 * add appointment from db to this.calendar
-                 */
-                this.date = dateFormat.parse(date);
-                LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
-
-                Appointment appointment = new Appointment(lastID, name, description, localDateTime, repeatType);
-                this.calendar.addAppointment(appointment);
-
-                this.dataSource.addData(appointment);
-
-                this.lastID += 1;
-                setAppointmentsDetails();
-                clearFields();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
+        if (!"".equals(name) && hour != null && minute != null && repeat != null) {
+            service.addAppointment(name, description, repeat, date);
+            setAppointmentsDetails();
+            clearFields();
+        }
+        else {
+            createAlert("Unable to add appointment", "Please fill in all required field.");
         }
     }
 
@@ -198,8 +131,8 @@ public class MainControllerGUI {
 
                 EditPageControllerGUI controller = loader.getController();
                 controller.setStage(stage);
-                controller.setEditAppointment(calendar.getAppointment(appointmentID.getValue()));
-                controller.setDataSource(dataSource);
+                controller.setService(service);
+                controller.setEditAppointment(appointmentID.getValue());
 
                 stage.showAndWait();
 
@@ -213,7 +146,7 @@ public class MainControllerGUI {
     @FXML
     public void deleteAppointment() {
         Stage stage = new Stage();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ConfirmDelete.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/DeleteAppointment.fxml"));
 
         try {
             if (appointmentID.getValue() != null) {
@@ -224,9 +157,8 @@ public class MainControllerGUI {
 
                 DeletePageControllerGUI controller = loader.getController();
                 controller.setStage(stage);
+                controller.setService(service);
                 controller.setDeleteID(appointmentID.getValue());
-                controller.setCalendar(calendar);
-                controller.setDataSource(dataSource);
 
                 stage.showAndWait();
 
@@ -237,7 +169,16 @@ public class MainControllerGUI {
         }
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+    private void createAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        alert.initModality(Modality.APPLICATION_MODAL);
+        alert.showAndWait();
     }
+
+    public void setService(CalendarService service) {
+        this.service = service;
+    }
+
 }

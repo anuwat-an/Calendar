@@ -1,15 +1,15 @@
-/**
- * Anuwat Angkuldee 5810401066
- */
+package client.controller;
 
-package controller;
+import common.CalendarService;
 
-import dataSource.DataSource;
-import model.Calendar;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
+
+/**
+ * Anuwat Angkuldee 5810401066
+ */
 
 public class DeletePageControllerGUI {
 
@@ -23,13 +23,11 @@ public class DeletePageControllerGUI {
     private Stage stage;
 
     private int deleteID;
-    private Calendar calendar;
-    private DataSource dataSource;
+    private CalendarService service;
 
     @FXML
     public void confirmDelete() {
-        this.calendar.deleteAppointment(deleteID);
-        this.dataSource.deleteData(deleteID);
+        this.service.deleteAppointment(deleteID);
         this.stage.close();
     }
 
@@ -47,12 +45,8 @@ public class DeletePageControllerGUI {
         this.stage = stage;
     }
 
-    public void setCalendar(Calendar calendar) {
-        this.calendar = calendar;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public void setService(CalendarService service) {
+        this.service = service;
     }
 
 }

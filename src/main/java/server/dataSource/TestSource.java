@@ -1,20 +1,20 @@
+package server.dataSource;
+
+import server.model.*;
+
+import java.time.LocalDateTime;
+import java.util.Vector;
+
 /**
  * Anuwat Angkuldee 5810401066
  */
 
-package dataSource;
+public class TestSource implements DataSource {
 
-import model.*;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-
-public class TestSource extends DataSource {
-
-    private ArrayList<Appointment> appointments;
+    private Vector<Appointment> appointments;
 
     public TestSource() {
-        appointments = new ArrayList<>();
+        appointments = new Vector<>();
         appointments.add(new Appointment(1, "test1", "test datasource", LocalDateTime.now(), new NoneRepeat()));
         appointments.add(new Appointment(2, "test2", "test datasource", LocalDateTime.now(), new DailyRepeat()));
         appointments.add(new Appointment(3, "test3", "test datasource", LocalDateTime.now(), new WeeklyRepeat()));
@@ -22,7 +22,7 @@ public class TestSource extends DataSource {
     }
 
     @Override
-    public ArrayList<Appointment> loadData() {
+    public Vector<Appointment> loadData() {
         return appointments;
     }
 

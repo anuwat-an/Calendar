@@ -1,29 +1,25 @@
+package server.dataSource;
+
+import server.library.DataLibrary;
+import server.model.Appointment;
+import server.model.RepeatType;
+
+import java.sql.*;
+import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Vector;
+import java.util.Date;
+
 /**
  * Anuwat Angkuldee 5810401066
  */
 
-package dataSource;
-
-import model.*;
-
-import java.sql.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-
-public class SQLiteSource extends DataSource {
-
-    private Date date = new Date();
-    private DateFormat dateFormat = new SimpleDateFormat("E dd/MM/yyyy HH:mm", Locale.US);
+public class SQLiteSource implements DataSource {
 
     @Override
-    public ArrayList<Appointment> loadData() {
-        ArrayList<Appointment> appointments = new ArrayList<>();
+    public Vector<Appointment> loadData() {
+        Vector<Appointment> appointments = new Vector<>();
 
         try {
             /** setup */
@@ -43,14 +39,14 @@ public class SQLiteSource extends DataSource {
                     String description = resultSet.getString("description");
                     String date = resultSet.getString("date");
                     String repeat = resultSet.getString("repeat");
-                    RepeatType repeatType = repeatTypeMap.get(repeat);
+                    RepeatType repeatType = DataLibrary.repeatTypeMap.get(repeat);
 
                     /**
                      * create LocalDateTime to add to appointment
                      * add appointment from db to return appointments
                      */
-                    this.date = dateFormat.parse(date);
-                    LocalDateTime localDateTime = LocalDateTime.ofInstant(this.date.toInstant(), ZoneId.systemDefault());
+                    Date d = DataLibrary.dateFormat.parse(date);
+                    LocalDateTime localDateTime = LocalDateTime.ofInstant(d.toInstant(), ZoneId.systemDefault());
 
                     Appointment appointment = new Appointment(id, name, description, localDateTime, repeatType);
                     appointments.add(appointment);
