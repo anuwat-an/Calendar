@@ -13,6 +13,8 @@ public class ServerMain {
 
         ApplicationContext buffer = new ClassPathXmlApplicationContext("calendar-server.xml");
 
+        System.out.println("Server has started.");
+
     }
 
 }

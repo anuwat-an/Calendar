@@ -138,6 +138,9 @@ public class MainControllerGUI {
 
                 setAppointmentsDetails();
             }
+            else {
+                createAlert("Unable to edit appointment", "Please select appointment id.");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -163,6 +166,9 @@ public class MainControllerGUI {
                 stage.showAndWait();
 
                 setAppointmentsDetails();
+            }
+            else {
+                createAlert("Unable to delete appointment", "Please select appointment id.");
             }
         } catch (IOException e) {
             e.printStackTrace();

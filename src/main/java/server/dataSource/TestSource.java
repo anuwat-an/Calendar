@@ -33,7 +33,8 @@ public class TestSource implements DataSource {
 
     @Override
     public void addData(Appointment appointment) {
-        appointments.add(appointment);
+        if (!appointments.contains(appointment))
+            appointments.add(appointment);
     }
 
     @Override

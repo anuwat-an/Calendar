@@ -7,6 +7,8 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 
 /**
@@ -93,8 +95,11 @@ public class EditPageControllerGUI {
         this.datePicker.setValue(service.getAppointmentDate(id).toLocalDate());
         this.name.setText(service.getAppointmentName(id));
         this.description.setText(service.getAppointmentDescription(id));
-        this.hour.setValue(service.getAppointmentDate(id).getHour()+"");
-        this.minute.setValue(service.getAppointmentDate(id).getMinute()+"");
+        NumberFormat numberFormat = new DecimalFormat("00");
+        String hour = numberFormat.format(service.getAppointmentDate(id).getHour());
+        String minute = numberFormat.format(service.getAppointmentDate(id).getMinute());
+        this.hour.setValue(hour);
+        this.minute.setValue(minute);
         this.repeatComboBox.setValue(service.getAppointmentRepeat(id));
     }
 
