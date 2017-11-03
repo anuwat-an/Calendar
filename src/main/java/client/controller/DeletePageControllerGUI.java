@@ -36,7 +36,7 @@ public class DeletePageControllerGUI {
         this.stage.close();
     }
 
-    public void setDeleteID(int id) {
+    public void setDeleteAppointment(int id) {
         this.deleteID = id;
         this.textLabel.setText("Are you sure to delete appointment ID: "+deleteID);
     }

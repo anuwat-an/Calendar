@@ -161,7 +161,7 @@ public class MainControllerGUI {
                 DeletePageControllerGUI controller = loader.getController();
                 controller.setStage(stage);
                 controller.setService(service);
-                controller.setDeleteID(appointmentID.getValue());
+                controller.setDeleteAppointment(appointmentID.getValue());
 
                 stage.showAndWait();
 

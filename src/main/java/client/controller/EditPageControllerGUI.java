@@ -103,7 +103,7 @@ public class EditPageControllerGUI {
         this.repeatComboBox.setValue(service.getAppointmentRepeat(id));
     }
 
-    public void createAlert(String title, String message) {
+    private void createAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setHeaderText(title);
         alert.setContentText(message);
