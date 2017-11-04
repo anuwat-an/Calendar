@@ -23,6 +23,7 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-runner:1.0.0-RC3" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-suite-api:1.0.0-RC3" level="project" />
     <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.20.0" level="project" />
+    <orderEntry type="library" name="Maven: mysql:mysql-connector-java:8.0.7-dmr" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-context:5.0.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-aop:5.0.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-beans:5.0.0.RELEASE" level="project" />

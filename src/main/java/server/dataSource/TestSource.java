@@ -28,7 +28,11 @@ public class TestSource implements DataSource {
 
     @Override
     public int getLastID() {
-        return appointments.size();
+        int lastID = 0;
+        for (Appointment appointment : appointments) {
+            lastID = Math.max(lastID, appointment.getId());
+        }
+        return lastID;
     }
 
     @Override

@@ -1,36 +1,26 @@
 package server.dataSource;
 
-import server.model.Appointment;
-
-import java.util.Vector;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * Anuwat Angkuldee 5810401066
  */
 
-public class MySQLSource implements DataSource {
+public class MySQLSource extends DatabaseSource {
     @Override
-    public Vector<Appointment> loadData() {
-        return null;
-    }
-
-    @Override
-    public int getLastID() {
-        return 0;
-    }
-
-    @Override
-    public void addData(Appointment appointment) {
-
-    }
-
-    @Override
-    public void updateData(Appointment appointment) {
-
-    }
-
-    @Override
-    public void deleteData(int id) {
-
+    public Connection connect() {
+        Connection connection = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            String dbURL = "jdbc:mysql://localhost:8000/Appointments";
+            connection = DriverManager.getConnection(dbURL, "root", "");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return connection;
     }
 }
