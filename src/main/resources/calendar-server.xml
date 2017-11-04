@@ -9,7 +9,13 @@
         <constructor-arg ref="sqliteSource"/>
     </bean>
 
+    <!--<bean id="fileSystemSource" class="server.dataSource.FileSystemSource"/>-->
+
+    <!--<bean id="mySqlSource" class="server.dataSource.MySQLSource"/>-->
+
     <bean id="sqliteSource" class="server.dataSource.SQLiteSource"/>
+
+    <!--<bean id="testSource" class="server.dataSource.TestSource"/>-->
 
     <bean class="org.springframework.remoting.rmi.RmiServiceExporter">
         <property name="service" ref="calendar"/>
